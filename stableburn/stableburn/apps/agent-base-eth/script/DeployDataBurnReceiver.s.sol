@@ -12,7 +12,7 @@ import "../contracts/DataBurnReceiver.sol";
 contract DeployDataBurnReceiver is Script {
     // Base mainnet addresses
     address constant USDC = 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913;
-    address constant PYUSD = 0xCfC37A6AB183dd4aED08C204D1c2773c0b1BDf46;
+    address constant PYUSD = 0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46;
     
     // DEX Routers on Base (choose one)
     address constant BASESWAP_ROUTER = 0x327Df1E6de05895d2ab08513aaDD9313Fe505d86; // BaseSwap (Uniswap V2 fork)

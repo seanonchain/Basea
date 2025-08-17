@@ -1,7 +1,10 @@
 import { X402Resource } from '@agent-spend-permissions/shared-types'
+import { useFacilitator } from 'x402/verify'
+import { facilitator } from '@coinbase/x402'
 
 export class DiscoveryService {
   private services: Map<string, X402Resource> = new Map()
+  private facilitatorList: any[] = []
 
   async initialize() {
     console.log('🔍 Initializing discovery service...')
@@ -39,15 +42,44 @@ export class DiscoveryService {
 
   private async fetchFacilitatorServices() {
     try {
-      // TODO: Implement fetching from x402 facilitator
       console.log('📡 Fetching services from x402 facilitator...')
+      
+      // Get the list function from the facilitator
+      const { list } = useFacilitator(facilitator)
+      
+      // Fetch all available services from the facilitator
+      this.facilitatorList = await list()
+      
+      console.log(`📊 Found ${this.facilitatorList.length} services from facilitator`)
     } catch (error) {
       console.error('Failed to fetch facilitator services:', error)
     }
   }
 
-  async listServices(): Promise<X402Resource[]> {
-    return Array.from(this.services.values())
+  async listServices(): Promise<any> {
+    // Combine internal services and facilitator services
+    const internalServices = Array.from(this.services.values())
+    
+    return {
+      internal: internalServices,
+      facilitator: this.facilitatorList,
+      summary: {
+        totalInternal: internalServices.length,
+        totalFacilitator: this.facilitatorList.length,
+        totalServices: internalServices.length + this.facilitatorList.length
+      }
+    }
+  }
+  
+  async getFacilitatorServices(): Promise<any[]> {
+    // Refresh facilitator list
+    try {
+      const { list } = useFacilitator(facilitator)
+      this.facilitatorList = await list()
+    } catch (error) {
+      console.error('Error refreshing facilitator services:', error)
+    }
+    return this.facilitatorList
   }
 
   async getService(id: string): Promise<X402Resource | undefined> {

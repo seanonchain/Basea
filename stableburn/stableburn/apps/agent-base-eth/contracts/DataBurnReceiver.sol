@@ -15,8 +15,8 @@ pragma solidity ^0.8.20;
  * - Comprehensive event logging
  */
 
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/Pausable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -56,7 +56,7 @@ contract DataBurnReceiver is ReentrancyGuard, Pausable, Ownable {
     address public constant USDC = 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913;
     
     /// @notice PayPal USD (PYUSD) address on Base
-    address public constant PYUSD = 0xCfC37A6AB183dd4aED08C204D1c2773c0b1BDf46;
+    address public constant PYUSD = 0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46;
     
     /// @notice Dead address for burning tokens
     address public constant BURN_ADDRESS = 0x000000000000000000000000000000000000dEaD;
@@ -354,7 +354,7 @@ contract DataBurnReceiver is ReentrancyGuard, Pausable, Ownable {
         if (amountIn < MIN_SWAP_AMOUNT) return; // Skip dust amounts
         
         // Approve router to spend tokens
-        IERC20(tokenIn).safeApprove(dexRouter, amountIn);
+        SafeERC20.forceApprove(IERC20(tokenIn), dexRouter, amountIn);
         
         // Build swap path
         address[] memory path = _buildSwapPath(tokenIn);
@@ -381,7 +381,7 @@ contract DataBurnReceiver is ReentrancyGuard, Pausable, Ownable {
             _burn(databurnReceived);
         } catch {
             // Swap failed, reset approval
-            IERC20(tokenIn).safeApprove(dexRouter, 0);
+            SafeERC20.forceApprove(IERC20(tokenIn), dexRouter, 0);
             revert SwapFailed();
         }
     }
@@ -454,7 +454,11 @@ contract DataBurnReceiver is ReentrancyGuard, Pausable, Ownable {
     
     /**
      * @notice Get contract statistics
-     * @return stats Struct containing contract statistics
+     * @return totalBurnedAmount Total amount of tokens burned
+     * @return totalValueReceivedAmount Total value received in USD
+     * @return databurnTokenAddress Address of the DATABURN token
+     * @return dexRouterAddress Address of the DEX router
+     * @return isPaused Whether the contract is paused
      */
     function getStatistics() external view returns (
         uint256 totalBurnedAmount,

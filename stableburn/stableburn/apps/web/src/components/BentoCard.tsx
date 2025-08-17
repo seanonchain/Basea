@@ -63,9 +63,9 @@ export function BentoCard({
       const y = e.clientY - rect.top
       
       const newParticles: Particle[] = []
-      for (let i = 0; i < 20; i++) {
-        const angle = (Math.PI * 2 * i) / 20
-        const velocity = 2 + Math.random() * 3
+      for (let i = 0; i < 40; i++) {
+        const angle = (Math.PI * 2 * i) / 40
+        const velocity = 1.5 + Math.random() * 2.5
         newParticles.push({
           id: Date.now() + i,
           x,
@@ -80,19 +80,23 @@ export function BentoCard({
     // Start burn animation
     setIsBurning(true)
     
-    // After burn, start reform
+    // After burn, hide card completely
     setTimeout(() => {
       setIsBurning(false)
-      setIsReforming(true)
+      setIsBurned(true)
       setParticles([])
-    }, 800)
+    }, 1500)
     
-    // After reform, set burned state
+    // Start fade-in of new content
+    setTimeout(() => {
+      setIsReforming(true)
+    }, 1600)
+    
+    // Complete animation
     setTimeout(() => {
       setIsReforming(false)
-      setIsBurned(true)
       if (onClick) onClick()
-    }, 1400)
+    }, 2100)
   }
 
   // Clear particles after animation
@@ -104,7 +108,7 @@ export function BentoCard({
   }, [particles])
 
   const baseClasses = `
-    pixel-burn-container bento-card p-6 lg:p-8
+    pixel-burn-container bento-card p-3 lg:p-4
     ${hover && !isBurning && !isReforming ? 'flame-border cursor-pointer' : ''}
     ${sizeClasses[size]}
     ${isBurning ? 'pixel-burn-active' : ''}
@@ -178,16 +182,16 @@ export function BentoIcon({
   }
 
   const sizeClasses = {
-    small: 'w-10 h-10 text-lg',
-    medium: 'w-12 h-12 text-xl',
-    large: 'w-16 h-16 text-2xl'
+    small: 'w-8 h-8 text-base',
+    medium: 'w-10 h-10 text-lg',
+    large: 'w-12 h-12 text-xl'
   }
 
   return (
     <div className={`
       ${variantClasses[variant]} 
       ${sizeClasses[size]}
-      rounded-xl flex items-center justify-center font-bold mb-4
+      rounded-xl flex items-center justify-center font-bold mb-2
       transition-transform duration-300 hover:scale-110
     `}>
       {children}
@@ -207,9 +211,9 @@ export function BentoTitle({
   size = 'medium' 
 }: BentoTitleProps) {
   const sizeClasses = {
-    small: 'text-lg',
-    medium: 'text-xl lg:text-2xl',
-    large: 'text-2xl lg:text-3xl'
+    small: 'text-base',
+    medium: 'text-lg lg:text-xl',
+    large: 'text-xl lg:text-2xl'
   }
 
   return (
@@ -229,7 +233,7 @@ interface BentoDescriptionProps {
 
 export function BentoDescription({ children }: BentoDescriptionProps) {
   return (
-    <p className="text-steel-600 text-sm lg:text-base">
+    <p className="text-steel-600 text-xs lg:text-sm">
       {children}
     </p>
   )
@@ -256,11 +260,11 @@ export function BentoStat({ label, value, trend }: BentoStatProps) {
 
   return (
     <div className="flex flex-col">
-      <span className="text-steel-500 text-xs uppercase tracking-wide mb-1">
+      <span className="text-steel-500 text-xs uppercase tracking-wide">
         {label}
       </span>
-      <div className="flex items-baseline gap-2">
-        <span className="text-2xl font-bold text-steel-900">
+      <div className="flex items-baseline gap-1">
+        <span className="text-lg font-bold text-steel-900">
           {value}
         </span>
         {trend && (

@@ -1,0 +1,3 @@
+[submodule "stableburn/stableburn/apps/agent-base-eth/lib/openzeppelin-contracts"]
+	path = stableburn/stableburn/apps/agent-base-eth/lib/openzeppelin-contracts
+	url = https://github.com/OpenZeppelin/openzeppelin-contracts

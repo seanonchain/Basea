@@ -37,54 +37,6 @@ export class HttpServer {
     this.app.use(paymentMiddleware(
       this.receiverAddress,
       {
-        // Discovery API - requires payment for full access
-        '/api/discovery': {
-          price: '$0.001',
-          network: isMainnet ? 'base' : 'base-sepolia',
-          config: {
-            description: 'Access agent.base.eth discovery service listing x402 and MCP endpoints',
-            outputSchema: {
-              type: 'object',
-              properties: {
-                services: {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      name: { type: 'string' },
-                      endpoint: { type: 'string' },
-                      price: { type: 'string' },
-                      description: { type: 'string' }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        // MCP proxy - requires payment per tool call
-        '/api/mcp/:tool': {
-          price: '$0.002',
-          network: isMainnet ? 'base' : 'base-sepolia',
-          config: {
-            description: 'Access OpenSea MCP tools through agent.base.eth proxy',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                tool: { type: 'string', description: 'MCP tool name' },
-                params: { type: 'object', description: 'Tool parameters' }
-              },
-              required: ['tool']
-            },
-            outputSchema: {
-              type: 'object',
-              properties: {
-                result: { type: 'object' },
-                error: { type: 'string' }
-              }
-            }
-          }
-        },
         // Chat endpoint - requires payment for AI responses
         '/chat': {
           price: '$0.005',
@@ -107,26 +59,6 @@ export class HttpServer {
             }
           }
         },
-        // Premium data endpoints
-        '/api/data/opensea': {
-          price: '$0.01',
-          network: isMainnet ? 'base' : 'base-sepolia',
-          config: {
-            description: 'Access OpenSea NFT market data with enhanced formatting',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                collection: { type: 'string', description: 'Collection slug' },
-                format: { 
-                  type: 'string', 
-                  enum: ['json', 'markdown', 'html'],
-                  description: 'Output format'
-                }
-              },
-              required: ['collection']
-            }
-          }
-        }
       },
       facilitatorConfig
     ))
@@ -208,22 +140,6 @@ export class HttpServer {
               font-size: 0.875rem;
               margin-top: 0.5rem;
             }
-            .features {
-              display: grid;
-              grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-              gap: 1rem;
-              margin: 2rem 0;
-            }
-            .feature {
-              background: #f8f9fa;
-              padding: 1rem;
-              border-radius: 8px;
-              text-align: center;
-            }
-            .feature-icon {
-              font-size: 2rem;
-              margin-bottom: 0.5rem;
-            }
           </style>
         </head>
         <body>
@@ -265,22 +181,22 @@ export class HttpServer {
               <div class="endpoint">
                 <span class="method get">GET</span>
                 <span class="path">/api/discovery</span>
-                <span class="price">$0.001</span>
-                <div class="description">List x402 and MCP services (x402 payment required)</div>
+                <span class="price free">FREE</span>
+                <div class="description">List x402 and MCP services</div>
               </div>
               
               <div class="endpoint">
                 <span class="method post">POST</span>
                 <span class="path">/api/mcp/:tool</span>
-                <span class="price">$0.002</span>
-                <div class="description">Access MCP tools (x402 payment required)</div>
+                <span class="price free">FREE</span>
+                <div class="description">Access MCP tools (Zora & OpenSea)</div>
               </div>
               
               <div class="endpoint">
                 <span class="method get">GET</span>
                 <span class="path">/api/data/opensea</span>
-                <span class="price">$0.01</span>
-                <div class="description">Premium OpenSea data (x402 payment required)</div>
+                <span class="price free">FREE</span>
+                <div class="description">Premium OpenSea data</div>
               </div>
               
               <div class="endpoint">
@@ -292,9 +208,11 @@ export class HttpServer {
             </div>
             
             <h2>Payment Information</h2>
-            <p>This service uses the x402 payment protocol. Protected endpoints require micropayments in USDC on Base.</p>
+            <p>This service uses the x402 payment protocol. Protected endpoints require micropayments on Base.</p>
+            <p><strong>Supported Tokens:</strong> USDC (PYUSD coming soon)</p>
             <p><strong>Receiver:</strong> <code>${this.receiverAddress}</code></p>
             <p><strong>Network:</strong> ${process.env.NETWORK || 'base-sepolia'}</p>
+            <p>Learn how to make x402 payments: <a href="https://docs.cdp.coinbase.com/x402/quickstart-for-buyers" target="_blank" style="color: #667eea;">x402 Quickstart Guide</a></p>
             
             <h2>Contact</h2>
             <p>XMTP: agent.base.eth</p>
@@ -397,10 +315,10 @@ export class HttpServer {
           'Automatic $DATABURN token burns'
         ],
         pricing: {
-          discovery: '$0.001',
-          mcp_tools: '$0.002',
+          discovery: 'FREE',
+          mcp_tools: 'FREE',
           chat: '$0.005',
-          opensea_data: '$0.01'
+          opensea_data: 'FREE'
         },
         payment: {
           address: this.receiverAddress,

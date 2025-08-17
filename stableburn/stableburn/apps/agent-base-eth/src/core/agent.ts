@@ -6,6 +6,7 @@ import { PaymentHandler } from '../services/payments/x402-receiver'
 import { TokenomicsManager } from '../services/tokenomics/burn-contract'
 import { AgentPersonality } from './personality'
 import { ConversationMemory } from './memory'
+import { MessageHandlers } from '../channels/xmtp/handlers'
 
 export class AgentBaseEth {
   private xmtpClient?: XMTPClient
@@ -16,6 +17,7 @@ export class AgentBaseEth {
   private tokenomics: TokenomicsManager
   private personality: AgentPersonality
   private memory: ConversationMemory
+  private messageHandlers: MessageHandlers
 
   constructor() {
     this.personality = new AgentPersonality()
@@ -24,6 +26,7 @@ export class AgentBaseEth {
     this.mcpProxy = new MCPProxy()
     this.paymentHandler = new PaymentHandler()
     this.tokenomics = new TokenomicsManager()
+    this.messageHandlers = new MessageHandlers(this.discoveryService)
     this.httpServer = new HttpServer(this)
   }
 
@@ -52,7 +55,15 @@ export class AgentBaseEth {
     // Store in memory
     await this.memory.addMessage(content, context)
     
-    // Generate response using personality
+    // Check if this is from XMTP and needs tool handling
+    if (context.platform === 'xmtp') {
+      // Use message handlers with OpenAI tools for XMTP messages
+      const response = await this.messageHandlers.handleMessageWithTools(content)
+      await this.memory.addResponse(response, context)
+      return response
+    }
+    
+    // For HTTP chat endpoint, use personality directly
     const response = await this.personality.generateResponse(content, context)
     
     // Store response
