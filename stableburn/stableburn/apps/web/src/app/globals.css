@@ -56,40 +56,61 @@ body {
   color: white;
 }
 
-/* Bento card styles */
+/* Pixelated card styles */
 @layer components {
-  .bento-card {
-    @apply relative overflow-hidden rounded-2xl bg-white/80 backdrop-blur-sm border border-steel-200 transition-all duration-300;
+  .pixel-card {
+    @apply relative bg-gray-900 transition-all duration-300;
+    border: 4px solid;
+    border-image: linear-gradient(45deg, #0052FF, #FF6B35, #00D4FF, #FFD700) 4;
+    box-shadow: 
+      0 0 0 2px #000,
+      4px 4px 0 0 #333,
+      8px 8px 0 0 #555;
+    image-rendering: pixelated;
   }
   
-  .bento-card:hover {
-    @apply transform -translate-y-1 shadow-bento-hover border-flame-500/20;
+  .pixel-card:hover {
+    @apply transform translate-x-1 translate-y-1;
+    box-shadow: 
+      0 0 0 2px #000,
+      2px 2px 0 0 #333,
+      4px 4px 0 0 #555;
   }
   
-  .bento-card-gradient {
-    @apply absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-flame-500/5;
+  .pixel-card-blue {
+    @apply bg-blue-900;
+    border-color: #0052FF;
+    box-shadow: 
+      0 0 0 2px #000,
+      4px 4px 0 0 #0040CC,
+      8px 8px 0 0 #003399;
   }
   
-  .glass-effect {
-    @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-glass;
+  .pixel-card-purple {
+    @apply bg-purple-900;
+    border-color: #8B5CF6;
+    box-shadow: 
+      0 0 0 2px #000,
+      4px 4px 0 0 #7C3AED,
+      8px 8px 0 0 #6D28D9;
   }
   
-  .flame-border {
-    @apply relative;
+  .pixel-card-orange {
+    @apply bg-orange-900;
+    border-color: #FF6B35;
+    box-shadow: 
+      0 0 0 2px #000,
+      4px 4px 0 0 #EA580C,
+      8px 8px 0 0 #DC2626;
   }
   
-  .flame-border::before {
-    content: '';
-    @apply absolute inset-0 rounded-2xl bg-gradient-to-r from-base-blue via-flame-500 to-flame-400 opacity-0 transition-opacity duration-300;
-    padding: 2px;
-    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    mask-composite: exclude;
-    -webkit-mask-composite: xor;
-  }
-  
-  .flame-border:hover::before {
-    @apply opacity-100;
+  .pixel-card-green {
+    @apply bg-green-900;
+    border-color: #10B981;
+    box-shadow: 
+      0 0 0 2px #000,
+      4px 4px 0 0 #059669,
+      8px 8px 0 0 #047857;
   }
   
   .hero-gradient {

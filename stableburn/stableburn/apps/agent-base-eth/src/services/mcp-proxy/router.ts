@@ -1,24 +1,21 @@
-import { OpenSeaMCPClient } from './opensea-mcp-client'
+import { OpenSeaAISDK } from './opensea-ai-sdk'
 
 export class MCPProxy {
   private servers: Map<string, any> = new Map()
-  private openSeaMCP?: OpenSeaMCPClient
+  private openSeaMCP?: OpenSeaAISDK
 
   async initialize() {
     console.log('🔌 Initializing MCP proxy...')
     
-    // Initialize OpenSea MCP client if access token is available
+    // Initialize OpenSea MCP with AI SDK if access token is available
     const openSeaToken = process.env.OPENSEA_ACCESS_TOKEN
     if (openSeaToken) {
-      this.openSeaMCP = new OpenSeaMCPClient(openSeaToken)
-      console.log('✅ OpenSea MCP client initialized')
-      
-      // List available tools for debugging
       try {
-        const tools = await this.openSeaMCP.listTools()
-        console.log('📋 Available OpenSea MCP tools:', tools.tools?.map((t: any) => t.name).join(', '))
+        this.openSeaMCP = new OpenSeaAISDK(openSeaToken)
+        await this.openSeaMCP.initialize()
+        console.log('✅ MCP proxy initialized with OpenSea AI SDK')
       } catch (error) {
-        console.log('⚠️  Could not list OpenSea MCP tools:', error)
+        console.log('⚠️  Could not initialize OpenSea MCP:', error)
       }
     } else {
       console.log('⚠️  OpenSea access token not configured')
@@ -27,7 +24,7 @@ export class MCPProxy {
     // Register available MCP servers
     this.servers.set('opensea', {
       name: 'OpenSea MCP',
-      endpoint: 'https://mcp.opensea.io/mcp'
+      endpoint: 'AI SDK integration'
     })
   }
 
@@ -47,7 +44,7 @@ export class MCPProxy {
     }
     
     try {
-      console.log(`🎨 OpenSea MCP request: ${tool}`, params)
+      console.log(`🎨 OpenSea MCP request via AI SDK: ${tool}`, params)
       
       // Map common parameters
       if (params.collection && !params.slug) {
@@ -63,7 +60,7 @@ export class MCPProxy {
         delete params.query
       }
       
-      // Call the OpenSea MCP tool
+      // Call the OpenSea MCP tool via AI SDK
       const result = await this.openSeaMCP.callTool(tool, params)
       
       return {
@@ -83,30 +80,32 @@ export class MCPProxy {
     }
   }
 
-  
-  async getAvailableTools() {
-    const tools: any = {}
-    
-    // Get OpenSea tools from MCP server if available
-    if (this.openSeaMCP) {
-      try {
-        const mcpTools = await this.openSeaMCP.listTools()
-        tools.opensea = mcpTools.tools?.map((t: any) => t.name) || []
-      } catch {
-        tools.opensea = [
-          'search',
-          'get_collection',
-          'search_collections',
-          'get_trending_collections',
-          'get_top_collections',
-          'search_tokens',
-          'get_token',
-          'get_token_balances',
-          'get_nft_balances'
-        ]
-      }
+  /**
+   * List all available MCP servers
+   */
+  listServers() {
+    return Array.from(this.servers.entries()).map(([key, value]) => ({
+      id: key,
+      ...value
+    }))
+  }
+
+  /**
+   * Get OpenSea AI SDK instance for direct use
+   */
+  getOpenSeaSDK() {
+    return this.openSeaMCP
+  }
+
+  /**
+   * List all available OpenSea tools
+   */
+  async listOpenSeaTools() {
+    if (!this.openSeaMCP) {
+      return []
     }
     
-    return tools
+    const tools = this.openSeaMCP.getTools()
+    return Object.keys(tools)
   }
 }

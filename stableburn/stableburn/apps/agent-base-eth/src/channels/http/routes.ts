@@ -59,6 +59,45 @@ export class HttpServer {
             }
           }
         },
+        // MCP proxy endpoints - charge 0.01 USDC per call
+        '/api/mcp/*': {
+          price: '$0.01',
+          network: isMainnet ? 'base' : 'base-sepolia',
+          config: {
+            description: 'Access OpenSea NFT marketplace data via MCP tools',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                tool: { type: 'string', description: 'MCP tool name' },
+                params: { type: 'object', description: 'Tool parameters' }
+              }
+            },
+            outputSchema: {
+              type: 'object',
+              properties: {
+                success: { type: 'boolean' },
+                data: { type: 'object' },
+                error: { type: 'string' }
+              }
+            }
+          }
+        },
+        // OpenSea data endpoint - charge 0.01 USDC
+        '/api/data/opensea': {
+          price: '$0.01',
+          network: isMainnet ? 'base' : 'base-sepolia',
+          config: {
+            description: 'Premium OpenSea collection data in multiple formats',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                collection: { type: 'string', description: 'Collection slug' },
+                format: { type: 'string', description: 'Output format: json, markdown, or html' }
+              },
+              required: ['collection']
+            }
+          }
+        }
       },
       facilitatorConfig
     ))
@@ -188,15 +227,15 @@ export class HttpServer {
               <div class="endpoint">
                 <span class="method post">POST</span>
                 <span class="path">/api/mcp/:tool</span>
-                <span class="price free">FREE</span>
-                <div class="description">Access OpenSea MCP tools</div>
+                <span class="price">$0.01</span>
+                <div class="description">Access OpenSea MCP tools (x402 payment required)</div>
               </div>
               
               <div class="endpoint">
                 <span class="method get">GET</span>
                 <span class="path">/api/data/opensea</span>
-                <span class="price free">FREE</span>
-                <div class="description">Premium OpenSea data</div>
+                <span class="price">$0.01</span>
+                <div class="description">Premium OpenSea data (x402 payment required)</div>
               </div>
               
               <div class="endpoint">
@@ -251,8 +290,9 @@ export class HttpServer {
         const body = await c.req.json()
         const result = await this.agent.getMCPProxy().handleRequest(tool, body)
         return c.json(result)
-      } catch (error) {
-        return c.json({ error: 'MCP request failed' }, 500)
+      } catch (error: any) {
+        console.error('MCP route error:', error)
+        return c.json({ error: error.message || 'MCP request failed' }, 500)
       }
     })
 
@@ -387,15 +427,18 @@ export class HttpServer {
   }
 
   async start() {
-    return new Promise((resolve) => {
-      serve({
+    try {
+      const server = serve({
         fetch: this.app.fetch,
         port: this.port
       })
       console.log(`🌐 HTTP server with x402 payments listening on port ${this.port}`)
       console.log(`💰 Receiver address: ${this.receiverAddress}`)
       console.log(`🔗 Network: ${process.env.NETWORK || 'base-sepolia'}`)
-      resolve(true)
-    })
+      return true
+    } catch (error) {
+      console.error('❌ Failed to start HTTP server:', error)
+      throw error
+    }
   }
 }

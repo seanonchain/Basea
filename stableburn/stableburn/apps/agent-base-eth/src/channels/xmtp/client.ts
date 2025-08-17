@@ -130,8 +130,10 @@ export class XMTPClient {
       // Initialize AgentKit manager
       await this.agentKitManager.initialize()
       
-      // Start listening for messages
-      await this.startListening()
+      // Start listening for messages (non-blocking)
+      this.startListening().catch(error => {
+        console.error('❌ Error starting XMTP listener:', error)
+      })
       
     } catch (error) {
       console.error('❌ Failed to initialize XMTP client:', error)
