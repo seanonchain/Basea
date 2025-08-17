@@ -1,4 +1,11 @@
 import { AgentBaseEth } from './core/agent'
+import * as dotenv from 'dotenv'
+import * as path from 'path'
+
+// Load environment variables from root .env first
+dotenv.config({ path: path.resolve(__dirname, '../../../.env') })
+// Then load local .env to override if needed
+dotenv.config()
 
 async function main() {
   console.log('====================================')

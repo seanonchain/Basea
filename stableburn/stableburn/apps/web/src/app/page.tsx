@@ -89,10 +89,10 @@ export default function Home() {
       {/* Header */}
       <header className="relative z-10 glass-effect border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
+          <div className="flex justify-between items-center py-2">
             <div>
-              <h1 className="text-2xl font-bold text-gradient">StableBurn Agent</h1>
-              <p className="text-steel-600">AI-powered creator coin trading on Base</p>
+              <h1 className="text-xl font-bold text-gradient">StableBurn Agent</h1>
+              <p className="text-xs text-steel-600">AI-powered creator coin trading on Base</p>
             </div>
             <div className="flex items-center space-x-4">
               <a
@@ -117,19 +117,19 @@ export default function Home() {
       </header>
 
       {/* Main Content */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
         {!isAuthenticated ? (
           <>
             {/* Hero Section */}
-            <div className="text-center mb-12 relative">
-              <div className="glass-effect rounded-3xl p-8 lg:p-12 mb-8 relative overflow-hidden">
+            <div className="text-center mb-4 relative">
+              <div className="glass-effect rounded-3xl p-4 lg:p-6 mb-4 relative overflow-hidden">
                 <FlameAccent position="top-right" size="medium" />
                 <FlameAccent position="bottom-left" size="small" />
                 <div className="relative z-10">
-                  <h2 className="text-4xl lg:text-5xl font-bold mb-4">
+                  <h2 className="text-2xl lg:text-3xl font-bold mb-2">
                     <span className="text-gradient">Welcome to StableBurn</span>
                   </h2>
-                  <p className="text-lg text-steel-600 mb-8 max-w-2xl mx-auto">
+                  <p className="text-sm text-steel-600 mb-4 max-w-2xl mx-auto">
                     Trade creator coins with AI assistance. Secure spend permissions, gas-free transactions, and instant execution.
                   </p>
                   <SignInWithBaseButton onSignIn={handleSignIn} colorScheme="light" />
@@ -138,7 +138,7 @@ export default function Home() {
             </div>
 
             {/* Bento Box Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6 animate-slide-up">
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-2 lg:gap-3 animate-slide-up">
               
               {/* Row 1: Core Features */}
               <BentoCard size="large" className="md:col-span-2 lg:col-span-3">
@@ -274,13 +274,13 @@ export default function Home() {
             </div>
 
             {/* Roadmap Section */}
-            <div className="mt-16">
+            <div className="mt-4">
               <HolographicRoadmap />
             </div>
 
             {/* Pixel Burn Demo Section */}
-            <div className="mt-12 text-center">
-              <p className="text-sm text-steel-500 mb-4 flex items-center justify-center gap-2">
+            <div className="mt-3 text-center">
+              <p className="text-xs text-steel-500 mb-2 flex items-center justify-center gap-2">
                 <span className="text-flame-500 animate-pulse">🔥</span>
                 Click any card to see the pixel burn effect
                 <span className="text-flame-500 animate-pulse">🔥</span>
@@ -288,7 +288,7 @@ export default function Home() {
             </div>
 
             {/* Additional Info Section */}
-            <div className="mt-8 grid md:grid-cols-2 gap-6">
+            <div className="mt-3 grid md:grid-cols-2 gap-3">
               <BentoCard 
                 size="small"
                 className="md:col-span-1"

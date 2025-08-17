@@ -76,7 +76,7 @@ export function HolographicRoadmap() {
   return (
     <div 
       ref={cardRef}
-      className="holographic-card rounded-3xl p-8 lg:p-12 relative overflow-hidden"
+      className="holographic-card rounded-3xl p-4 lg:p-6 relative overflow-hidden"
       style={{
         '--mouse-x': `${mousePosition.x}%`,
         '--mouse-y': `${mousePosition.y}%`
@@ -99,11 +99,11 @@ export function HolographicRoadmap() {
 
       {/* Content */}
       <div className="relative z-10">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl lg:text-5xl font-bold mb-4">
+        <div className="text-center mb-4">
+          <h2 className="text-2xl lg:text-3xl font-bold mb-2">
             <span className="holographic-text">2025 Roadmap</span>
           </h2>
-          <p className="text-white/90 text-lg">
+          <p className="text-white/90 text-sm">
             Building the future of agent infrastructure
           </p>
         </div>
@@ -116,7 +116,7 @@ export function HolographicRoadmap() {
           </div>
 
           {/* Nodes */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-6 md:gap-8 relative">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4 relative">
             {roadmapData.map((node, index) => (
               <div key={node.id} className={`relative ${node.id === 5 ? 'col-span-2 md:col-span-1' : ''}`}>
                 <div 
@@ -129,11 +129,11 @@ export function HolographicRoadmap() {
                   </div>
                   
                   {/* Node title */}
-                  <div className="mt-4 text-center">
-                    <h3 className="text-white font-semibold text-sm lg:text-base">
+                  <div className="mt-2 text-center">
+                    <h3 className="text-white font-semibold text-xs lg:text-sm">
                       {node.title}
                     </h3>
-                    <p className="text-white/70 text-xs mt-1 hidden lg:block">
+                    <p className="text-white/70 text-xs hidden lg:block">
                       {node.description}
                     </p>
                   </div>
@@ -162,7 +162,7 @@ export function HolographicRoadmap() {
                     <div className="flex items-start gap-3">
                       <span className="text-2xl flex-shrink-0">{node.icon}</span>
                       <div>
-                        <h4 className="font-bold text-steel-900 mb-2">
+                        <h4 className="font-bold text-steel-900 mb-1">
                           {node.title}
                         </h4>
                         <p className="text-steel-600 text-sm">
@@ -185,7 +185,7 @@ export function HolographicRoadmap() {
           </div>
 
           {/* Progress indicator */}
-          <div className="mt-12 flex items-center justify-center gap-2">
+          <div className="mt-4 flex items-center justify-center gap-2">
             <span className="text-white/70 text-sm">Progress</span>
             <div className="w-48 h-2 bg-white/20 rounded-full overflow-hidden">
               <div 
@@ -198,11 +198,11 @@ export function HolographicRoadmap() {
         </div>
 
         {/* Call to action */}
-        <div className="mt-12 text-center">
-          <p className="text-white/80 mb-4">
+        <div className="mt-4 text-center">
+          <p className="text-white/80 mb-2 text-sm">
             Ready to join the future of agent infrastructure?
           </p>
-          <button className="px-6 py-3 bg-white/20 backdrop-blur-sm text-white font-semibold rounded-xl hover:bg-white/30 transition-all duration-300 border border-white/30">
+          <button className="px-4 py-2 bg-white/20 backdrop-blur-sm text-white text-sm font-semibold rounded-xl hover:bg-white/30 transition-all duration-300 border border-white/30">
             Learn More About x402 Payments
           </button>
         </div>

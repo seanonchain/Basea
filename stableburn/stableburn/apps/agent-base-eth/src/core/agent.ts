@@ -35,8 +35,12 @@ export class AgentBaseEth {
     
     // Initialize XMTP if configured
     if (process.env.XMTP_PRIVATE_KEY || process.env.WALLET_KEY) {
-      this.xmtpClient = new XMTPClient(this)
-      await this.xmtpClient.initialize()
+      try {
+        this.xmtpClient = new XMTPClient(this)
+        await this.xmtpClient.initialize()
+      } catch (error) {
+        console.log('⚠️  XMTP initialization failed, continuing without XMTP support:', error)
+      }
     }
     
     // Start HTTP server

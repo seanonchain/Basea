@@ -1,0 +1,13 @@
+{
+  "network": "base",
+  "chainId": 8453,
+  "contractAddress": "0x76a6ed9dece032d227b713010022c5e43a307d8a",
+  "deploymentTx": "0xaa9536a3072c402443d522ce66708094773ecdab284d012b1af6aafa45104aa6",
+  "initializationTx": "0x3fa9cb5cc6020d1b1f03b02bbbaefaadba8bb304cc21eaa432ab22013e477d89",
+  "tokenAddress": "0xd47be5ca7c38b4beb6ffcb9b7da848de71ec8edb",
+  "dexRouter": "0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24",
+  "deployer": "0x45C9a201e2937608905fEF17De9A67f25F9f98E0",
+  "deployedAt": "2025-08-17T09:10:00.000Z",
+  "initialized": true,
+  "notes": "Initial deployment using test token at 0xd47be5ca7c38b4beb6ffcb9b7da848de71ec8edb. Will be updated to use $DATABURN token once deployed via Flaunch UI."
+}

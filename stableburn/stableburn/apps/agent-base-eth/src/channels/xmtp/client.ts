@@ -39,7 +39,9 @@ export class XMTPClient {
    * Create a signer from private key
    */
   private createSigner(privateKey: string) {
-    const account = privateKeyToAccount(`0x${privateKey}`)
+    // Remove 0x prefix if present and ensure it's properly formatted
+    const cleanKey = privateKey.startsWith('0x') ? privateKey.slice(2) : privateKey
+    const account = privateKeyToAccount(`0x${cleanKey}`)
     return {
       getAddress: async () => account.address,
       signMessage: async (message: string | Uint8Array) => {
