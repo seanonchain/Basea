@@ -35,10 +35,6 @@ export function BentoCard({
   rel,
   enableBurnEffect = true
 }: BentoCardProps) {
-  const [isBurning, setIsBurning] = useState(false)
-  const [isReforming, setIsReforming] = useState(false)
-  const [isBurned, setIsBurned] = useState(false)
-  const [particles, setParticles] = useState<Particle[]>([])
   const cardRef = useRef<HTMLDivElement>(null)
 
   const sizeClasses = {
@@ -49,97 +45,24 @@ export function BentoCard({
   }
 
   const handleCardClick = (e: React.MouseEvent) => {
-    if (!enableBurnEffect || href) {
-      if (onClick) onClick()
-      return
-    }
-
-    e.preventDefault()
-    
-    // Generate particles at click position
-    if (cardRef.current) {
-      const rect = cardRef.current.getBoundingClientRect()
-      const x = e.clientX - rect.left
-      const y = e.clientY - rect.top
-      
-      const newParticles: Particle[] = []
-      for (let i = 0; i < 40; i++) {
-        const angle = (Math.PI * 2 * i) / 40
-        const velocity = 1.5 + Math.random() * 2.5
-        newParticles.push({
-          id: Date.now() + i,
-          x,
-          y,
-          vx: Math.cos(angle) * velocity,
-          vy: Math.sin(angle) * velocity
-        })
-      }
-      setParticles(newParticles)
-    }
-
-    // Start burn animation
-    setIsBurning(true)
-    
-    // After burn, hide card completely
-    setTimeout(() => {
-      setIsBurning(false)
-      setIsBurned(true)
-      setParticles([])
-    }, 1500)
-    
-    // Start fade-in of new content
-    setTimeout(() => {
-      setIsReforming(true)
-    }, 1600)
-    
-    // Complete animation
-    setTimeout(() => {
-      setIsReforming(false)
-      if (onClick) onClick()
-    }, 2100)
+    if (onClick) onClick()
   }
 
-  // Clear particles after animation
-  useEffect(() => {
-    if (particles.length > 0) {
-      const timer = setTimeout(() => setParticles([]), 1000)
-      return () => clearTimeout(timer)
-    }
-  }, [particles])
 
   const baseClasses = `
-    pixel-burn-container bento-card p-3 lg:p-4
-    ${hover && !isBurning && !isReforming ? 'flame-border cursor-pointer' : ''}
+    bg-white border border-gray-200 rounded-xl p-4 lg:p-6 shadow-sm
+    ${hover ? 'hover:shadow-md hover:border-gray-300 transition-all duration-200 cursor-pointer' : ''}
     ${sizeClasses[size]}
-    ${isBurning ? 'pixel-burn-active' : ''}
-    ${isReforming ? 'pixel-reform-active' : ''}
-    ${isBurned ? 'bento-card-burned' : ''}
     ${className}
   `
 
   const content = (
-    <>
-      {gradient && !isBurned && <div className="bento-card-gradient" />}
-      <div className="relative z-10">
-        {children}
-      </div>
-      {/* Pixel particles */}
-      {particles.map((particle) => (
-        <div
-          key={particle.id}
-          className="pixel-particle pixel-float"
-          style={{
-            left: `${particle.x}px`,
-            top: `${particle.y}px`,
-            '--x': `${particle.vx * 50}px`,
-            '--y': `${particle.vy * 50}px`,
-          } as React.CSSProperties}
-        />
-      ))}
-    </>
+    <div className="relative">
+      {children}
+    </div>
   )
 
-  if (href && !enableBurnEffect) {
+  if (href) {
     return (
       <a 
         href={href}
@@ -176,9 +99,9 @@ export function BentoIcon({
   size = 'medium' 
 }: BentoIconProps) {
   const variantClasses = {
-    blue: 'bg-base-blue text-white',
-    flame: 'bg-gradient-to-br from-flame-500 to-flame-400 text-white',
-    steel: 'bg-steel-700 text-steel-100'
+    blue: 'bg-blue-500 text-white',
+    flame: 'bg-orange-500 text-white',
+    steel: 'bg-gray-600 text-white'
   }
 
   const sizeClasses = {
@@ -191,8 +114,7 @@ export function BentoIcon({
     <div className={`
       ${variantClasses[variant]} 
       ${sizeClasses[size]}
-      rounded-xl flex items-center justify-center font-bold mb-2
-      transition-transform duration-300 hover:scale-110
+      rounded-lg flex items-center justify-center font-bold mb-3
     `}>
       {children}
     </div>
@@ -218,8 +140,7 @@ export function BentoTitle({
 
   return (
     <h3 className={`
-      font-bold mb-2 
-      ${gradient ? 'text-gradient' : 'text-steel-900'}
+      font-bold mb-2 text-gray-900
       ${sizeClasses[size]}
     `}>
       {children}
@@ -233,7 +154,7 @@ interface BentoDescriptionProps {
 
 export function BentoDescription({ children }: BentoDescriptionProps) {
   return (
-    <p className="text-steel-600 text-xs lg:text-sm">
+    <p className="text-gray-600 text-sm lg:text-base">
       {children}
     </p>
   )
@@ -260,11 +181,11 @@ export function BentoStat({ label, value, trend }: BentoStatProps) {
 
   return (
     <div className="flex flex-col">
-      <span className="text-steel-500 text-xs uppercase tracking-wide">
+      <span className="text-gray-500 text-xs uppercase tracking-wide">
         {label}
       </span>
-      <div className="flex items-baseline gap-1">
-        <span className="text-lg font-bold text-steel-900">
+      <div className="flex items-baseline gap-2">
+        <span className="text-2xl font-bold text-gray-900">
           {value}
         </span>
         {trend && (

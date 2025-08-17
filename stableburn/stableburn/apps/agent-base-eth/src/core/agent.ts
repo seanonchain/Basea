@@ -7,6 +7,7 @@ import { TokenomicsManager } from '../services/tokenomics/burn-contract'
 import { AgentPersonality } from './personality'
 import { ConversationMemory } from './memory'
 import { MessageHandlers } from '../channels/xmtp/handlers'
+import { AIMessageHandlers } from '../channels/xmtp/ai-handlers'
 
 export class AgentBaseEth {
   private xmtpClient?: XMTPClient
@@ -18,6 +19,7 @@ export class AgentBaseEth {
   private personality: AgentPersonality
   private memory: ConversationMemory
   private messageHandlers: MessageHandlers
+  private aiHandlers: AIMessageHandlers
 
   constructor() {
     this.personality = new AgentPersonality()
@@ -27,6 +29,7 @@ export class AgentBaseEth {
     this.paymentHandler = new PaymentHandler()
     this.tokenomics = new TokenomicsManager()
     this.messageHandlers = new MessageHandlers(this.discoveryService)
+    this.aiHandlers = new AIMessageHandlers(this.discoveryService)
     this.httpServer = new HttpServer(this)
   }
 
@@ -52,6 +55,13 @@ export class AgentBaseEth {
     await this.paymentHandler.initialize()
     await this.tokenomics.initialize()
     
+    // Initialize AI handlers
+    try {
+      await this.aiHandlers.initialize()
+    } catch (error) {
+      console.log('⚠️  AI handlers initialization failed:', error)
+    }
+    
     console.log('✅ agent.base.eth is ready!')
   }
 
@@ -61,8 +71,8 @@ export class AgentBaseEth {
     
     // Check if this is from XMTP and needs tool handling
     if (context.platform === 'xmtp') {
-      // Use message handlers with OpenAI tools for XMTP messages
-      const response = await this.messageHandlers.handleMessageWithTools(content)
+      // Use AI SDK handlers with MCP tools for XMTP messages
+      const response = await this.aiHandlers.handleMessageWithTools(content)
       await this.memory.addResponse(response, context)
       return response
     }

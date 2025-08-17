@@ -32,28 +32,30 @@ This file tracks implementation tasks, features, and work progress for the Agent
 
 ---
 
-## 📱 apps/web - Zora + Spend Permissions
+## 📱 apps/web - Spend Permissions Application
 
 ### ✅ Completed Features
-
-#### OpenSea MCP Server Integration
-**Status:** ✅ Completed  
-- Implemented MCP server at `src/lib/mcp/opensea-server.ts`
-- Created all OpenSea tool definitions
-- Added HTTP/SSE endpoint
-- Configured authentication
-
-#### x402 Payment Protocol Integration
-**Status:** ✅ Completed  
-- Built payment middleware
-- Created dynamic endpoint wrapper
-- Implemented usage-based billing
-- Added Bazaar discovery
 
 #### Migration to Bun
 **Status:** ✅ Completed  
 - Successfully migrated from npm to Bun
 - Updated all documentation
+
+### 🔴 Not Started
+
+#### OpenSea MCP Server Integration
+**Status:** 🔴 Not Started  
+- Will implement MCP server at `src/lib/mcp/opensea-server.ts`
+- Create all OpenSea tool definitions
+- Add HTTP/SSE endpoint
+- Configure authentication
+
+#### x402 Payment Protocol Integration
+**Status:** 🔴 Not Started  
+- Build payment middleware
+- Create dynamic endpoint wrapper
+- Implement usage-based billing
+- Add Bazaar discovery
 
 ### 🟡 In Progress
 
@@ -73,23 +75,54 @@ This file tracks implementation tasks, features, and work progress for the Agent
 
 ## 🤖 apps/agent-base-eth - Main Agent Service
 
+### ✅ Completed Features
+
+#### OpenSea MCP Integration with AI SDK
+**Status:** ✅ Completed  
+- Integrated OpenSea MCP using AI SDK's experimental_createMCPClient
+- Successfully connected to OpenSea's SSE endpoint
+- Configured 17 tools for NFT marketplace operations
+- Created AIMessageHandlers for XMTP integration
+
+#### x402 Payment Protocol
+**Status:** ✅ Completed  
+- Integrated x402-hono middleware for payment processing
+- Configured payment requirements for premium endpoints
+- Set up receiver address for micropayments
+
+#### Hono HTTP Server
+**Status:** ✅ Completed  
+- Migrated from Express to Hono framework
+- Created landing page with API documentation
+- Implemented health checks and status endpoints
+
+#### Remove All Zora References
+**Status:** ✅ Completed  
+- Removed all Zora service code from MCP proxy
+- Updated documentation to remove Zora mentions
+- Cleaned up routes and API endpoints
+- Focus now entirely on OpenSea MCP
+
 ### XMTP Integration
-**Status:** 🔴 Not Started  
+**Status:** 🟡 Partially Complete  
 **Priority:** High  
 **Intention:** Enable agent communication via XMTP protocol for 24/7 availability.
 
-#### Implementation Steps:
-- [ ] Research XMTP AgentKit example implementation
-- [ ] Install XMTP SDK dependencies
-- [ ] Create XMTP client initialization
-- [ ] Implement message handlers
-- [ ] Set up conversation management
-- [ ] Add response generation logic
-- [ ] Test with XMTP network
-- [ ] Implement error handling and reconnection
+#### Completed Steps:
+- [x] Installed XMTP SDK dependencies (@xmtp/node-sdk v4.0.3+)
+- [x] Created XMTP client initialization code
+- [x] Implemented AIMessageHandlers with OpenSea MCP tools
+- [x] Set up conversation management structure
+- [x] Added response generation with GPT-4
+
+#### Remaining Steps:
+- [ ] Fix XMTP signer initialization error
+- [ ] Test with XMTP network at xmtp.chat
+- [ ] Implement group conversation support
+- [ ] Add attachment handling
 
 #### Dependencies:
-- `@xmtp/xmtp-js` - XMTP client SDK
+- `@xmtp/node-sdk` - XMTP client SDK (v4.0.3+)
 - `@coinbase/agentkit` - Agent utilities
 
 ### Discovery Service
@@ -115,19 +148,17 @@ This file tracks implementation tasks, features, and work progress for the Agent
 - `POST /api/discovery/register` - Register new service
 
 ### OpenSea MCP Proxy
-**Status:** 🔴 Not Started  
+**Status:** ✅ Completed  
 **Priority:** High  
 **Intention:** Re-serve OpenSea data through MCP with x402 payment requirements.
 
-#### Implementation Steps:
-- [ ] Import existing MCP server code
-- [ ] Add x402 payment verification
-- [ ] Implement request proxying
-- [ ] Add response caching
-- [ ] Create usage tracking
-- [ ] Set up pricing tiers
-- [ ] Add rate limiting
-- [ ] Implement billing aggregation
+#### Completed Steps:
+- [x] Integrated OpenSea MCP with AI SDK
+- [x] Added x402 payment verification
+- [x] Implemented request proxying
+- [x] Set up SSE transport for MCP
+- [x] Created 17 tool integrations
+- [x] Added authentication with beta token
 
 #### Pricing Structure:
 - Search queries: $0.001
@@ -257,6 +288,68 @@ This file tracks implementation tasks, features, and work progress for the Agent
 
 ---
 
+## 🎯 Next Priority Tasks
+
+### Immediate Priorities (This Week)
+
+#### 1. Fix XMTP Signer Issue
+**Status:** 🔴 Not Started  
+**Blocker:** Yes - prevents XMTP functionality  
+**Error:** `signer.getIdentifier is not a function`
+
+**Solution Steps:**
+- [ ] Review XMTP node-sdk documentation for proper signer creation
+- [ ] Update XMTPClient initialization in `src/channels/xmtp/client.ts`
+- [ ] Test connection to XMTP network
+- [ ] Verify message sending/receiving works
+
+#### 2. Test OpenSea MCP Integration End-to-End
+**Status:** 🔴 Not Started  
+**Priority:** High  
+
+**Test Cases:**
+- [ ] Test "What's the floor price of Based Punks?" query
+- [ ] Test trending collections query
+- [ ] Test wallet NFT balance check
+- [ ] Verify all 17 tools are accessible
+- [ ] Test response formatting for XMTP
+
+#### 3. Deploy $DATABURN Token
+**Status:** 🔴 Not Started  
+**Priority:** High  
+
+**Steps:**
+- [ ] Visit flaunch.gg and deploy token
+- [ ] Update DATABURN_CONTRACT_ADDRESS in .env
+- [ ] Deploy DataBurnReceiverV3 contract
+- [ ] Initialize contract with token address
+- [ ] Test automatic burn mechanism
+
+### Next Sprint (Next 2 Weeks)
+
+#### 4. Complete Discovery Service
+**Status:** 🔴 Not Started  
+**Priority:** Medium  
+
+**Implementation:**
+- [ ] Build service registry
+- [ ] Add visualization generators
+- [ ] Create search/filtering
+- [ ] Implement caching layer
+
+#### 5. Production Deployment
+**Status:** 🔴 Not Started  
+**Priority:** Medium  
+
+**Checklist:**
+- [ ] Set up production environment variables
+- [ ] Deploy to Railway/Vercel
+- [ ] Configure domain (agent.base.eth)
+- [ ] Set up monitoring
+- [ ] Create backup strategy
+
+---
+
 ## 🚀 Quick Start Commands
 
 ```bash
@@ -283,17 +376,18 @@ bun run deploy:agent  # Deploy agent service
 ## 📊 Progress Summary
 
 ### Overall Completion
-- **apps/web**: 75% complete (migration pending)
-- **apps/agent-base-eth**: 0% complete (not started)
-- **Infrastructure**: 0% complete (not started)
+- **apps/web**: 25% complete (needs OpenSea MCP and x402 integration)
+- **apps/agent-base-eth**: 60% complete (OpenSea MCP done, XMTP partial, discovery pending)
+- **Infrastructure**: 10% complete (basic structure exists)
 
 ### Priority Order
-1. Monorepo infrastructure setup
-2. Migrate existing app to apps/web
-3. Build agent.base.eth XMTP integration
-4. Implement discovery service
-5. Deploy $DATABURN token
-6. Launch full system
+1. ✅ Basic monorepo structure (done)
+2. ✅ OpenSea MCP integration with AI SDK (done)
+3. 🟡 Fix XMTP integration (in progress)
+4. 🔴 Deploy $DATABURN token (high priority)
+5. 🔴 Complete discovery service
+6. 🔴 Production deployment
+7. 🔴 Launch full system
 
 ---
 

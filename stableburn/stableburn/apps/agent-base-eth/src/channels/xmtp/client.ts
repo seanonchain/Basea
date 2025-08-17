@@ -1,6 +1,8 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import { Client, type Conversation, type DecodedMessage, type XmtpEnv } from '@xmtp/node-sdk'
+import { getRandomValues } from 'crypto'
+import { Client, IdentifierKind, type Conversation, type DecodedMessage, type XmtpEnv, type Signer } from '@xmtp/node-sdk'
+import { toBytes } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 import { generatePrivateKey } from 'viem/accounts'
 import { CoinbaseAgentKitManager } from './agentkit-manager'
@@ -38,17 +40,20 @@ export class XMTPClient {
   /**
    * Create a signer from private key
    */
-  private createSigner(privateKey: string) {
+  private createSigner(privateKey: string): Signer {
     // Remove 0x prefix if present and ensure it's properly formatted
-    const cleanKey = privateKey.startsWith('0x') ? privateKey.slice(2) : privateKey
-    const account = privateKeyToAccount(`0x${cleanKey}`)
+    const cleanKey = privateKey.startsWith('0x') ? privateKey : `0x${privateKey}`
+    const account = privateKeyToAccount(cleanKey as `0x${string}`)
+    
     return {
-      getAddress: async () => account.address,
-      signMessage: async (message: string | Uint8Array) => {
-        const signature = await account.signMessage({
-          message: typeof message === 'string' ? message : Buffer.from(message).toString()
-        })
-        return Buffer.from(signature.slice(2), 'hex')
+      type: "EOA",
+      getIdentifier: () => ({
+        identifierKind: IdentifierKind.Ethereum,
+        identifier: account.address.toLowerCase(),
+      }),
+      signMessage: async (message: string) => {
+        const signature = await account.signMessage({ message })
+        return toBytes(signature)
       }
     }
   }
@@ -59,7 +64,29 @@ export class XMTPClient {
   private getEncryptionKeyFromHex(hexKey: string): Uint8Array {
     // Remove 0x prefix if present
     const cleanHex = hexKey.startsWith('0x') ? hexKey.slice(2) : hexKey
-    return Buffer.from(cleanHex, 'hex')
+    
+    // Convert hex string to Uint8Array
+    const bytes = new Uint8Array(cleanHex.length / 2)
+    for (let i = 0; i < cleanHex.length; i += 2) {
+      bytes[i / 2] = parseInt(cleanHex.substr(i, 2), 16)
+    }
+    
+    // Ensure it's exactly 32 bytes
+    if (bytes.length !== 32) {
+      throw new Error(`Encryption key must be exactly 32 bytes (64 hex characters), got ${bytes.length} bytes`)
+    }
+    
+    return bytes
+  }
+  
+  /**
+   * Generate a random encryption key
+   */
+  private generateEncryptionKey(): string {
+    const bytes = getRandomValues(new Uint8Array(32))
+    return Array.from(bytes)
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('')
   }
 
   /**
@@ -79,7 +106,11 @@ export class XMTPClient {
       }
       
       if (!encryptionKey) {
-        throw new Error('ENCRYPTION_KEY environment variable is required')
+        // Generate a new encryption key if not provided
+        const newKey = this.generateEncryptionKey()
+        console.log('⚠️  No ENCRYPTION_KEY found, generating new one:')
+        console.log(`📝 Add this to your .env file: ENCRYPTION_KEY=${newKey}`)
+        throw new Error('ENCRYPTION_KEY environment variable is required. A new key has been generated above.')
       }
       
       // Create signer and encryption key

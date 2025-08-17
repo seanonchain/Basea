@@ -11,7 +11,12 @@ export const PERMIT2_ADDRESS = '0x000000000022d473030f116ddee9f6b43ac78ba3'
 export const TEST_TOKEN_ADDRESS = '0xd47be5ca7c38b4beb6ffcb9b7da848de71ec8edb'
 
 // DEX Router addresses
-export const UNISWAP_V2_ROUTER_BASE = '0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24' // BaseSwap router on Base
+export const UNISWAP_V3_ROUTER_BASE = '0x2626664c2603336E57B271c5C0b26F421741e481' // Uniswap V3 SwapRouter02 on Base
+export const UNISWAP_V3_QUOTER_BASE = '0x3d4e44Eb1374240CE5F1B871ab261CD16335B76a' // Uniswap V3 Quoter V2 on Base
+
+// Uniswap V3 Pool addresses on Base
+export const USDC_ETH_POOL = '0xd0b53D9277642d899DF5C87A3966A349A798F224' // USDC/ETH 0.05% fee pool
+export const WETH_ADDRESS_BASE = '0x4200000000000000000000000000000000000006' // Wrapped ETH on Base
 
 // API endpoints
 export const X402_FACILITATOR_URL = process.env.X402_FACILITATOR_URL || 'https://x402-facilitator.coinbase.com'

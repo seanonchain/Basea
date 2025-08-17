@@ -2,10 +2,10 @@
 pragma solidity ^0.8.30;
 
 /**
- * @title DataBurnReceiver
+ * @title DataBurnReceiverV3
  * @author agent.base.eth
- * @notice Receives x402 payments and automatically swaps USDC/PYUSD to $DATABURN and burns it
- * @dev Only accepts USDC and PYUSD for auto-swap, returns all other tokens to sender
+ * @notice Receives x402 payments and automatically swaps USDC/PYUSD to $DATABURN via ETH and burns it
+ * @dev Uses Uniswap V3 for USDC->ETH swap, then Flaunch pool for ETH->Token swap
  * 
  * Security Features:
  * - ReentrancyGuard for all external functions
@@ -21,33 +21,60 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-interface IUniswapV2Router02 {
-    function swapExactTokensForTokens(
-        uint amountIn,
-        uint amountOutMin,
-        address[] calldata path,
-        address to,
-        uint deadline
-    ) external returns (uint[] memory amounts);
+interface ISwapRouter {
+    struct ExactInputSingleParams {
+        address tokenIn;
+        address tokenOut;
+        uint24 fee;
+        address recipient;
+        uint256 deadline;
+        uint256 amountIn;
+        uint256 amountOutMinimum;
+        uint160 sqrtPriceLimitX96;
+    }
     
-    function swapExactETHForTokens(
-        uint amountOutMin,
-        address[] calldata path,
-        address to,
-        uint deadline
-    ) external payable returns (uint[] memory amounts);
+    function exactInputSingle(ExactInputSingleParams calldata params) external payable returns (uint256 amountOut);
+}
+
+interface IQuoterV2 {
+    struct QuoteExactInputSingleParams {
+        address tokenIn;
+        address tokenOut;
+        uint256 amountIn;
+        uint24 fee;
+        uint160 sqrtPriceLimitX96;
+    }
     
-    function WETH() external pure returns (address);
-    
-    function getAmountsOut(uint amountIn, address[] calldata path)
-        external view returns (uint[] memory amounts);
+    function quoteExactInputSingle(QuoteExactInputSingleParams memory params)
+        external
+        returns (
+            uint256 amountOut,
+            uint160 sqrtPriceX96After,
+            uint32 initializedTicksCrossed,
+            uint256 gasEstimate
+        );
+}
+
+interface IWETH {
+    function deposit() external payable;
+    function withdraw(uint256) external;
+    function balanceOf(address) external view returns (uint256);
+    function approve(address, uint256) external returns (bool);
+}
+
+// Flaunch DEX interface (simplified Uniswap V2 style)
+interface IFlaunchPair {
+    function getReserves() external view returns (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast);
+    function token0() external view returns (address);
+    function token1() external view returns (address);
+    function swap(uint amount0Out, uint amount1Out, address to, bytes calldata data) external;
 }
 
 /**
- * @title DataBurnReceiver
- * @notice Receives payments and burns $DATABURN tokens
+ * @title DataBurnReceiverV3
+ * @notice Receives payments and burns $DATABURN tokens via two-step swap
  */
-contract DataBurnReceiver is ReentrancyGuard, Pausable, Ownable {
+contract DataBurnReceiverV3 is ReentrancyGuard, Pausable, Ownable {
     using SafeERC20 for IERC20;
     
     // ============ Constants ============
@@ -58,19 +85,31 @@ contract DataBurnReceiver is ReentrancyGuard, Pausable, Ownable {
     /// @notice PayPal USD (PYUSD) address on Base
     address public constant PYUSD = 0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46;
     
+    /// @notice WETH address on Base
+    address public constant WETH = 0x4200000000000000000000000000000000000006;
+    
     /// @notice Dead address for burning tokens
     address public constant BURN_ADDRESS = 0x000000000000000000000000000000000000dEaD;
     
     /// @notice Minimum swap amount to prevent dust
     uint256 public constant MIN_SWAP_AMOUNT = 1e6; // 1 USDC/PYUSD (6 decimals)
     
+    /// @notice Uniswap V3 fee tier for USDC/ETH pool (0.05%)
+    uint24 public constant POOL_FEE = 500;
+    
     // ============ State Variables ============
     
     /// @notice Address of the $DATABURN token (set after deployment)
     address public databurnToken;
     
-    /// @notice DEX router address for swapping (Uniswap V2 compatible)
-    address public dexRouter;
+    /// @notice Uniswap V3 SwapRouter address
+    address public uniswapRouter;
+    
+    /// @notice Uniswap V3 Quoter address for price quotes
+    address public uniswapQuoter;
+    
+    /// @notice Flaunch pair address for ETH/Token swaps
+    address public flaunchPair;
     
     /// @notice Total amount of $DATABURN tokens burned
     uint256 public totalBurned;
@@ -104,8 +143,8 @@ contract DataBurnReceiver is ReentrancyGuard, Pausable, Ownable {
     event TokensSwapped(
         address indexed tokenIn,
         uint256 amountIn,
-        uint256 databurnOut,
-        address[] path
+        uint256 ethOut,
+        uint256 databurnOut
     );
     
     event UnsupportedTokenReceived(
@@ -127,7 +166,8 @@ contract DataBurnReceiver is ReentrancyGuard, Pausable, Ownable {
     
     event ConfigurationUpdated(
         address databurnToken,
-        address dexRouter,
+        address uniswapRouter,
+        address flaunchPair,
         uint256 slippageTolerance
     );
     
@@ -162,23 +202,30 @@ contract DataBurnReceiver is ReentrancyGuard, Pausable, Ownable {
     // ============ External Functions ============
     
     /**
-     * @notice Initialize contract with DATABURN token and DEX router addresses
+     * @notice Initialize contract with token and DEX addresses
      * @param _databurnToken Address of the $DATABURN token
-     * @param _dexRouter Address of the DEX router (Uniswap V2 compatible)
+     * @param _uniswapRouter Address of Uniswap V3 SwapRouter
+     * @param _uniswapQuoter Address of Uniswap V3 Quoter
+     * @param _flaunchPair Address of Flaunch ETH/Token pair
      * @dev Can only be called once by the owner
      */
     function initialize(
         address _databurnToken,
-        address _dexRouter
+        address _uniswapRouter,
+        address _uniswapQuoter,
+        address _flaunchPair
     ) external onlyOwner {
         if (databurnToken != address(0)) revert AlreadyInitialized();
         if (_databurnToken == address(0)) revert InvalidToken();
-        if (_dexRouter == address(0)) revert InvalidToken();
+        if (_uniswapRouter == address(0)) revert InvalidToken();
+        if (_flaunchPair == address(0)) revert InvalidToken();
         
         databurnToken = _databurnToken;
-        dexRouter = _dexRouter;
+        uniswapRouter = _uniswapRouter;
+        uniswapQuoter = _uniswapQuoter;
+        flaunchPair = _flaunchPair;
         
-        emit ConfigurationUpdated(databurnToken, dexRouter, slippageTolerance);
+        emit ConfigurationUpdated(databurnToken, uniswapRouter, flaunchPair, slippageTolerance);
     }
     
     /**
@@ -211,7 +258,7 @@ contract DataBurnReceiver is ReentrancyGuard, Pausable, Ownable {
         emit PaymentReceived(msg.sender, token, amount, paymentId);
         
         // Auto-swap to DATABURN and burn if initialized
-        if (databurnToken != address(0) && dexRouter != address(0)) {
+        if (databurnToken != address(0) && uniswapRouter != address(0) && flaunchPair != address(0)) {
             _swapAndBurn(token, amount);
         }
     }
@@ -238,7 +285,7 @@ contract DataBurnReceiver is ReentrancyGuard, Pausable, Ownable {
             emit PaymentReceived(msg.sender, token, amount, keccak256(abi.encodePacked(msg.sender, token, amount, block.timestamp)));
             
             // Auto-swap to DATABURN and burn if initialized
-            if (databurnToken != address(0) && dexRouter != address(0)) {
+            if (databurnToken != address(0) && uniswapRouter != address(0) && flaunchPair != address(0)) {
                 _swapAndBurn(token, amount);
             }
         } else {
@@ -284,7 +331,18 @@ contract DataBurnReceiver is ReentrancyGuard, Pausable, Ownable {
     function updateSlippageTolerance(uint256 _slippageTolerance) external onlyOwner {
         require(_slippageTolerance <= 1000, "Slippage too high"); // Max 10%
         slippageTolerance = _slippageTolerance;
-        emit ConfigurationUpdated(databurnToken, dexRouter, slippageTolerance);
+        emit ConfigurationUpdated(databurnToken, uniswapRouter, flaunchPair, slippageTolerance);
+    }
+    
+    /**
+     * @notice Update Flaunch pair address
+     * @param _flaunchPair New Flaunch pair address
+     * @dev Only owner can call
+     */
+    function updateFlaunchPair(address _flaunchPair) external onlyOwner {
+        if (_flaunchPair == address(0)) revert InvalidToken();
+        flaunchPair = _flaunchPair;
+        emit ConfigurationUpdated(databurnToken, uniswapRouter, flaunchPair, slippageTolerance);
     }
     
     /**
@@ -344,83 +402,157 @@ contract DataBurnReceiver is ReentrancyGuard, Pausable, Ownable {
     // ============ Internal Functions ============
     
     /**
-     * @notice Swap USDC/PYUSD to DATABURN and burn
+     * @notice Two-step swap: USDC/PYUSD -> ETH -> DATABURN, then burn
      * @param tokenIn Address of input token (USDC or PYUSD)
      * @param amountIn Amount to swap
-     * @dev Internal function that handles the swap and burn logic
+     * @dev Internal function that handles the two-step swap and burn logic
      */
     function _swapAndBurn(address tokenIn, uint256 amountIn) private {
-        if (databurnToken == address(0) || dexRouter == address(0)) revert NotInitialized();
+        if (databurnToken == address(0) || uniswapRouter == address(0) || flaunchPair == address(0)) revert NotInitialized();
         if (amountIn < MIN_SWAP_AMOUNT) return; // Skip dust amounts
         
-        // Approve router to spend tokens
-        SafeERC20.forceApprove(IERC20(tokenIn), dexRouter, amountIn);
+        // Step 1: Swap USDC/PYUSD to ETH via Uniswap V3
+        uint256 ethReceived = _swapToETH(tokenIn, amountIn);
         
-        // Build swap path
-        address[] memory path = _buildSwapPath(tokenIn);
+        if (ethReceived == 0) revert SwapFailed();
+        
+        // Step 2: Swap ETH to DATABURN via Flaunch pair
+        uint256 databurnReceived = _swapETHToToken(ethReceived);
+        
+        if (databurnReceived == 0) revert SwapFailed();
+        
+        emit TokensSwapped(tokenIn, amountIn, ethReceived, databurnReceived);
+        
+        // Step 3: Burn DATABURN tokens
+        _burn(databurnReceived);
+    }
+    
+    /**
+     * @notice Swap USDC/PYUSD to ETH via Uniswap V3
+     * @param tokenIn Input token address (USDC or PYUSD)
+     * @param amountIn Amount to swap
+     * @return ethOut Amount of ETH received
+     */
+    function _swapToETH(address tokenIn, uint256 amountIn) private returns (uint256 ethOut) {
+        // Approve router to spend tokens
+        SafeERC20.forceApprove(IERC20(tokenIn), uniswapRouter, amountIn);
         
         // Calculate minimum output with slippage
-        uint256 minAmountOut = _calculateMinAmountOut(amountIn, path);
+        uint256 minAmountOut = _getQuoteUniswapV3(tokenIn, WETH, amountIn);
+        minAmountOut = (minAmountOut * (10000 - slippageTolerance)) / 10000;
+        
+        // Execute swap via Uniswap V3
+        ISwapRouter.ExactInputSingleParams memory params = ISwapRouter.ExactInputSingleParams({
+            tokenIn: tokenIn,
+            tokenOut: WETH,
+            fee: POOL_FEE,
+            recipient: address(this),
+            deadline: block.timestamp + 300,
+            amountIn: amountIn,
+            amountOutMinimum: minAmountOut,
+            sqrtPriceLimitX96: 0
+        });
+        
+        ethOut = ISwapRouter(uniswapRouter).exactInputSingle(params);
+        
+        // Unwrap WETH to ETH
+        if (ethOut > 0) {
+            IWETH(WETH).withdraw(ethOut);
+        }
+        
+        return ethOut;
+    }
+    
+    /**
+     * @notice Swap ETH to DATABURN via Flaunch pair
+     * @param ethIn Amount of ETH to swap
+     * @return tokenOut Amount of DATABURN received
+     */
+    function _swapETHToToken(uint256 ethIn) private returns (uint256 tokenOut) {
+        IFlaunchPair pair = IFlaunchPair(flaunchPair);
+        
+        // Get reserves and determine swap direction
+        (uint112 reserve0, uint112 reserve1,) = pair.getReserves();
+        bool isToken0 = pair.token0() == databurnToken;
+        
+        // Calculate output amount using constant product formula
+        uint256 amountOut;
+        if (isToken0) {
+            // ETH is token1, DATABURN is token0
+            amountOut = _getAmountOut(ethIn, reserve1, reserve0);
+        } else {
+            // ETH is token0, DATABURN is token1
+            amountOut = _getAmountOut(ethIn, reserve0, reserve1);
+        }
+        
+        // Apply slippage
+        amountOut = (amountOut * (10000 - slippageTolerance)) / 10000;
         
         // Execute swap
-        uint256 balanceBefore = IERC20(databurnToken).balanceOf(address(this));
+        uint256 amount0Out = isToken0 ? amountOut : 0;
+        uint256 amount1Out = isToken0 ? 0 : amountOut;
         
-        try IUniswapV2Router02(dexRouter).swapExactTokensForTokens(
-            amountIn,
-            minAmountOut,
-            path,
-            address(this),
-            block.timestamp + 300 // 5 minute deadline
-        ) returns (uint[] memory amounts) {
-            uint256 balanceAfter = IERC20(databurnToken).balanceOf(address(this));
-            uint256 databurnReceived = balanceAfter - balanceBefore;
-            
-            emit TokensSwapped(tokenIn, amountIn, databurnReceived, path);
-            
-            // Burn DATABURN tokens
-            _burn(databurnReceived);
-        } catch {
-            // Swap failed, reset approval
-            SafeERC20.forceApprove(IERC20(tokenIn), dexRouter, 0);
-            revert SwapFailed();
-        }
+        // Send ETH to pair first
+        (bool sent,) = flaunchPair.call{value: ethIn}("");
+        require(sent, "Failed to send ETH to pair");
+        
+        // Then execute swap
+        pair.swap(amount0Out, amount1Out, address(this), "");
+        
+        // Check actual balance received
+        tokenOut = IERC20(databurnToken).balanceOf(address(this));
+        
+        return tokenOut;
     }
     
     /**
-     * @notice Build swap path for DEX router
-     * @param tokenIn Input token address
-     * @return path Array of addresses representing swap path
-     */
-    function _buildSwapPath(address tokenIn) private view returns (address[] memory) {
-        address weth = IUniswapV2Router02(dexRouter).WETH();
-        
-        // Direct path if liquidity exists, otherwise through WETH
-        address[] memory path = new address[](3);
-        path[0] = tokenIn;
-        path[1] = weth;
-        path[2] = databurnToken;
-        
-        return path;
-    }
-    
-    /**
-     * @notice Calculate minimum amount out with slippage
+     * @notice Get quote from Uniswap V3 Quoter
+     * @param tokenIn Input token
+     * @param tokenOut Output token
      * @param amountIn Input amount
-     * @param path Swap path
-     * @return minAmountOut Minimum expected output
+     * @return amountOut Expected output amount
      */
-    function _calculateMinAmountOut(
-        uint256 amountIn,
-        address[] memory path
-    ) private view returns (uint256) {
-        try IUniswapV2Router02(dexRouter).getAmountsOut(amountIn, path) returns (uint[] memory amounts) {
-            uint256 expectedOut = amounts[amounts.length - 1];
-            uint256 minAmountOut = (expectedOut * (10000 - slippageTolerance)) / 10000;
-            return minAmountOut;
+    function _getQuoteUniswapV3(
+        address tokenIn,
+        address tokenOut,
+        uint256 amountIn
+    ) private returns (uint256 amountOut) {
+        if (uniswapQuoter == address(0)) return 0;
+        
+        try IQuoterV2(uniswapQuoter).quoteExactInputSingle(
+            IQuoterV2.QuoteExactInputSingleParams({
+                tokenIn: tokenIn,
+                tokenOut: tokenOut,
+                fee: POOL_FEE,
+                amountIn: amountIn,
+                sqrtPriceLimitX96: 0
+            })
+        ) returns (uint256 _amountOut, uint160, uint32, uint256) {
+            return _amountOut;
         } catch {
-            // If quote fails, use 0 to allow any amount (risky but prevents stuck funds)
             return 0;
         }
+    }
+    
+    /**
+     * @notice Calculate output amount for constant product AMM
+     * @param amountIn Input amount
+     * @param reserveIn Input reserve
+     * @param reserveOut Output reserve
+     * @return amountOut Output amount
+     */
+    function _getAmountOut(
+        uint256 amountIn,
+        uint256 reserveIn,
+        uint256 reserveOut
+    ) private pure returns (uint256 amountOut) {
+        require(amountIn > 0, "Insufficient input amount");
+        require(reserveIn > 0 && reserveOut > 0, "Insufficient liquidity");
+        
+        uint256 amountInWithFee = amountIn * 997;
+        uint256 numerator = amountInWithFee * reserveOut;
+        uint256 denominator = (reserveIn * 1000) + amountInWithFee;
+        amountOut = numerator / denominator;
     }
     
     /**
@@ -457,21 +589,24 @@ contract DataBurnReceiver is ReentrancyGuard, Pausable, Ownable {
      * @return totalBurnedAmount Total amount of tokens burned
      * @return totalValueReceivedAmount Total value received in USD
      * @return databurnTokenAddress Address of the DATABURN token
-     * @return dexRouterAddress Address of the DEX router
+     * @return uniswapRouterAddress Address of the Uniswap router
+     * @return flaunchPairAddress Address of the Flaunch pair
      * @return isPaused Whether the contract is paused
      */
     function getStatistics() external view returns (
         uint256 totalBurnedAmount,
         uint256 totalValueReceivedAmount,
         address databurnTokenAddress,
-        address dexRouterAddress,
+        address uniswapRouterAddress,
+        address flaunchPairAddress,
         bool isPaused
     ) {
         return (
             totalBurned,
             totalValueReceived,
             databurnToken,
-            dexRouter,
+            uniswapRouter,
+            flaunchPair,
             paused()
         );
     }

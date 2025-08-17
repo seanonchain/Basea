@@ -189,7 +189,7 @@ export class HttpServer {
                 <span class="method post">POST</span>
                 <span class="path">/api/mcp/:tool</span>
                 <span class="price free">FREE</span>
-                <div class="description">Access MCP tools (Zora & OpenSea)</div>
+                <div class="description">Access OpenSea MCP tools</div>
               </div>
               
               <div class="endpoint">
