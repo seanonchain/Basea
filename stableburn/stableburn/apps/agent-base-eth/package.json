@@ -1,0 +1,40 @@
+{
+  "name": "@agent-spend-permissions/agent-base-eth",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "nodemon --exec ts-node src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "vitest",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "@xmtp/node-sdk": "^4.0.3",
+    "@coinbase/agentkit": "^0.6.2",
+    "@coinbase/agentkit-langchain": "^0.3.0",
+    "@coinbase/cdp-sdk": "latest",
+    "@langchain/core": "^0.3.19",
+    "@langchain/langgraph": "^0.2.21",
+    "@langchain/openai": "^0.3.14",
+    "openai": "^4.63.0",
+    "hono": "^4.0.0",
+    "@hono/node-server": "^1.0.0",
+    "x402-hono": "latest",
+    "@coinbase/x402": "latest",
+    "viem": "^2.21.0",
+    "ethers": "^6.0.0",
+    "@agent-spend-permissions/shared-types": "*",
+    "@agent-spend-permissions/x402-client": "*",
+    "@agent-spend-permissions/mcp-tools": "*",
+    "@agent-spend-permissions/config": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "nodemon": "^3.0.0",
+    "ts-node": "^10.9.0",
+    "vitest": "^3.2.4",
+    "eslint": "^8.0.0"
+  }
+}
