@@ -131,3 +131,125 @@ Required environment variables:
 4. **Zora Protocol** - Handles creator coin swaps and transfers
 5. **MCP Servers** - Will provide extensible tool access for AI agents
 6. **x402 Payments** - Will enable agent-to-agent commerce and API monetization
+
+## Multi-App Monorepo Architecture
+
+The project is evolving into a multi-app monorepo structure to support the agent.base.eth ecosystem, consisting of three main applications:
+
+### Application Structure
+
+**apps/web/** - Original Zora + spend permissions application
+- Current Next.js app with AI-powered creator coin purchases
+- Base Account spend permissions integration
+- OpenSea MCP server with x402 payments
+
+**apps/agent-base-eth/** - Main agent.base.eth service
+- XMTP messaging integration for agent communication
+- Discovery service for x402 resources and MCP endpoints
+- OpenSea data proxy with payment requirements
+- $DATABURN tokenomics with auto-burn mechanism
+- Smart contract for receiving and converting payments
+
+**apps/base-miniapp/** - Base App miniapp
+- MiniKit-powered chat interface
+- Direct connection to agent.base.eth backend
+- In-app x402 payments and tipping
+- Seamless Base App integration
+
+### agent.base.eth Features
+
+1. **XMTP Communication**
+   - Available 24/7 via XMTP protocol
+   - Integration with Coinbase AgentKit
+   - Persistent conversation management
+   - Multi-channel response capability
+
+2. **Discovery Service**
+   - Serves x402 Facilitator discovery list
+   - Value-add data presentation (JSON, markdown, visualizations)
+   - Dynamic service registry
+   - Agent-to-agent resource sharing
+
+3. **OpenSea MCP Proxy**
+   - Re-serves OpenSea data through MCP protocol
+   - Requires x402 micropayments
+   - Cached responses for efficiency
+   - Usage-based pricing tiers
+
+4. **$DATABURN Tokenomics**
+   - Token deployed via Clanker on Base
+   - Smart contract auto-converts incoming payments
+   - Automatic token burn mechanism
+   - Deflationary token model
+
+5. **Payment Features**
+   - x402 payment requirements for all services
+   - Tip acceptance in any token
+   - Automatic conversion to $DATABURN
+   - Future: NFT sales and subdomain auctions
+
+### Shared Infrastructure
+
+**packages/** - Shared code and utilities
+- `shared-types/` - TypeScript definitions
+- `x402-client/` - Reusable x402 client
+- `mcp-tools/` - MCP server utilities
+- `config/` - Shared configuration
+
+### Environment Variables
+
+```env
+# Core Services
+CDP_API_KEY_ID=
+CDP_API_KEY_SECRET=
+CDP_WALLET_SECRET=
+OPENAI_API_KEY=
+OPENSEA_ACCESS_TOKEN=
+PAYMASTER_URL=
+ZORA_API_KEY=
+
+# agent.base.eth Specific
+XMTP_ENV=production
+XMTP_PRIVATE_KEY=
+X402_FACILITATOR_URL=
+X402_RECEIVER_ADDRESS=
+DATABURN_CONTRACT_ADDRESS=
+CLANKER_API_KEY=
+AGENT_ENS_NAME=agent.base.eth
+
+# Base App MiniApp
+BASE_APP_ID=
+MINIKIT_SECRET=
+MINIKIT_REDIRECT_URI=
+```
+
+### Development Workflow
+
+1. **Monorepo Management**: Uses Turborepo for efficient builds
+2. **Package Manager**: Bun for all package operations
+3. **Shared Dependencies**: Centralized in root package.json
+4. **Independent Deployment**: Each app can be deployed separately
+5. **Type Safety**: Shared TypeScript definitions across apps
+
+### Smart Contract Architecture
+
+**DataBurnReceiver.sol** - Main payment receiver
+- Accepts x402 payments and tips
+- Automatic token swapping via DEX
+- Burns $DATABURN tokens on receipt
+- Event emission for tracking
+
+### API Structure
+
+Each app maintains its own API routes:
+- `apps/web/api/` - Original Zora and spend permission endpoints
+- `apps/agent-base-eth/api/` - Agent services and discovery
+- `apps/base-miniapp/api/` - MiniKit and chat endpoints
+
+### Future Expansions
+
+1. **Phase 1**: Core agent.base.eth implementation
+2. **Phase 2**: NFT sales with x402 payments
+3. **Phase 3**: Subdomain marketplace (*.agent.base.eth)
+4. **Phase 4**: Multi-agent coordination network
+5. **Phase 5**: Cross-chain agent services
