@@ -1,41 +1,32 @@
 {
   "name": "agent-spend-permissions",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "test": "vitest",
-    "test:ui": "vitest --ui",
-    "test:coverage": "vitest --coverage"
-  },
-  "dependencies": {
-    "@base-org/account": "^2.0.0",
-    "@base-org/account-ui": "^1.0.0",
-    "@coinbase/cdp-sdk": "latest",
-    "@types/node": "^20.0.0",
-    "@types/react": "^18.0.0",
-    "@types/react-dom": "^18.0.0",
-    "@zoralabs/coins-sdk": "latest",
-    "next": "14.0.0",
-    "openai": "^4.63.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "typescript": "^5.0.0",
-    "viem": "^2.21.0"
+    "dev": "turbo run dev",
+    "dev:web": "turbo run dev --filter=@agent-spend-permissions/web",
+    "dev:agent": "turbo run dev --filter=@agent-spend-permissions/agent-base-eth",
+    "dev:miniapp": "turbo run dev --filter=@agent-spend-permissions/base-miniapp",
+    "build": "turbo run build",
+    "build:web": "turbo run build --filter=@agent-spend-permissions/web",
+    "build:agent": "turbo run build --filter=@agent-spend-permissions/agent-base-eth",
+    "build:miniapp": "turbo run build --filter=@agent-spend-permissions/base-miniapp",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "format": "prettier --write \"**/*.{ts,tsx,md,json}\""
   },
   "devDependencies": {
-    "@testing-library/react": "^16.3.0",
-    "@vitejs/plugin-react": "^5.0.0",
-    "@vitest/ui": "^3.2.4",
-    "autoprefixer": "^10.4.14",
-    "eslint": "^8.0.0",
-    "eslint-config-next": "14.0.0",
-    "happy-dom": "^18.0.1",
-    "postcss": "^8.4.24",
-    "tailwindcss": "^3.3.0",
-    "vitest": "^3.2.4"
-  }
+    "prettier": "^3.0.0",
+    "turbo": "^1.10.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "packageManager": "bun@1.0.0"
 }

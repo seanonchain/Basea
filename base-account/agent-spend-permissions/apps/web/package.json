@@ -1,0 +1,45 @@
+{
+  "name": "@agent-spend-permissions/web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage"
+  },
+  "dependencies": {
+    "@base-org/account": "^2.0.0",
+    "@base-org/account-ui": "^1.0.0",
+    "@coinbase/cdp-sdk": "latest",
+    "@zoralabs/coins-sdk": "latest",
+    "next": "14.0.0",
+    "openai": "^4.63.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "viem": "^2.21.0",
+    "@agent-spend-permissions/shared-types": "*",
+    "@agent-spend-permissions/x402-client": "*",
+    "@agent-spend-permissions/mcp-tools": "*",
+    "@agent-spend-permissions/config": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "@testing-library/react": "^16.3.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "@vitest/ui": "^3.2.4",
+    "autoprefixer": "^10.4.14",
+    "eslint": "^8.0.0",
+    "eslint-config-next": "14.0.0",
+    "happy-dom": "^18.0.1",
+    "postcss": "^8.4.24",
+    "tailwindcss": "^3.3.0",
+    "typescript": "^5.0.0",
+    "vitest": "^3.2.4"
+  }
+}
