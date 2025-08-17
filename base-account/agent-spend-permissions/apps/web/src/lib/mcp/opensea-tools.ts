@@ -52,6 +52,12 @@ export class OpenSeaTools {
         return this.getTrendingCollections(args)
       case 'get_top_collections':
         return this.getTopCollections(args)
+      case 'execute_nft_purchase':
+        return this.executeNFTPurchase(args)
+      case 'execute_token_swap':
+        return this.executeTokenSwap(args)
+      case 'get_collection_listings':
+        return this.getCollectionListings(args)
       default:
         throw new Error(`Unknown tool: ${toolName}`)
     }
@@ -468,5 +474,141 @@ export class OpenSeaTools {
       'THIRTY_DAYS': '30d'
     }
     return timeframeMap[timeframe] || '1d'
+  }
+
+  /**
+   * Get collection listings (for purchasing)
+   */
+  private async getCollectionListings(args: {
+    collectionSlug: string;
+    limit?: number;
+    sortBy?: 'price' | 'created_date';
+  }): Promise<any> {
+    const { collectionSlug, limit = 10, sortBy = 'price' } = args
+
+    const params = new URLSearchParams({
+      limit: limit.toString(),
+      order_by: sortBy
+    })
+
+    const response = await fetch(
+      `${this.config.baseUrl}/listings/collection/${collectionSlug}?${params}`,
+      {
+        headers: this.headers
+      }
+    )
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch listings: ${response.status}`)
+    }
+
+    const data = await response.json()
+
+    return {
+      collectionSlug,
+      listings: data.listings || [],
+      floorPrice: data.listings?.[0]?.price || null,
+      totalListings: data.listings?.length || 0
+    }
+  }
+
+  /**
+   * Execute NFT purchase (prepare transaction data)
+   */
+  private async executeNFTPurchase(args: {
+    collectionSlug: string;
+    tokenId?: string;
+    maxPriceUSD: number;
+  }): Promise<any> {
+    const { collectionSlug, tokenId, maxPriceUSD } = args
+
+    // Get the cheapest listing or specific token listing
+    const listings = await this.getCollectionListings({
+      collectionSlug,
+      limit: tokenId ? 50 : 1,
+      sortBy: 'price'
+    })
+
+    let targetListing = null
+    
+    if (tokenId) {
+      // Find specific token
+      targetListing = listings.listings?.find((l: any) => 
+        l.token_id === tokenId
+      )
+    } else {
+      // Get cheapest listing
+      targetListing = listings.listings?.[0]
+    }
+
+    if (!targetListing) {
+      throw new Error(`No listing found for ${collectionSlug}${tokenId ? ` #${tokenId}` : ''}`)
+    }
+
+    // Check if price is within budget
+    const priceInUSD = parseFloat(targetListing.price) * 2000 // Assume ETH = $2000 for example
+    if (priceInUSD > maxPriceUSD) {
+      throw new Error(`Listing price ($${priceInUSD}) exceeds max price ($${maxPriceUSD})`)
+    }
+
+    // Return purchase parameters for Seaport
+    return {
+      success: true,
+      listing: targetListing,
+      purchaseParams: {
+        orderHash: targetListing.order_hash,
+        protocol: 'seaport',
+        contractAddress: targetListing.contract_address,
+        tokenId: targetListing.token_id,
+        price: targetListing.price,
+        currency: targetListing.payment_token,
+        seller: targetListing.seller,
+        expirationTime: targetListing.expiration_time
+      },
+      estimatedGas: '200000',
+      message: `Ready to purchase ${collectionSlug} #${targetListing.token_id} for ${targetListing.price} ETH`
+    }
+  }
+
+  /**
+   * Execute token swap (prepare transaction data)
+   */
+  private async executeTokenSwap(args: {
+    fromToken: string;
+    toToken: string;
+    amountUSD: number;
+  }): Promise<any> {
+    const { fromToken, toToken, amountUSD } = args
+
+    // Get swap quote
+    const quote = await this.getTokenSwapQuote({
+      fromToken,
+      toToken,
+      amount: amountUSD.toString(),
+      chain: 'base'
+    })
+
+    if (!quote) {
+      throw new Error(`Failed to get swap quote for ${fromToken} to ${toToken}`)
+    }
+
+    // Prepare swap parameters
+    return {
+      success: true,
+      quote,
+      swapParams: {
+        protocol: 'uniswap-v3', // Or other DEX
+        fromToken,
+        toToken,
+        fromAmount: quote.fromAmount,
+        toAmount: quote.toAmount,
+        route: quote.route,
+        slippage: 0.5, // 0.5% slippage
+        deadline: Math.floor(Date.now() / 1000) + 300 // 5 minutes
+      },
+      estimatedGas: quote.estimatedGas,
+      priceImpact: quote.priceImpact,
+      message: `Ready to swap ${amountUSD} USD of ${fromToken} for ${toToken}`
+    }
   }
 }
