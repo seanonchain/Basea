@@ -133,6 +133,177 @@ export class HttpServer {
   }
 
   private setupRoutes() {
+    // Root route - Landing page (free)
+    this.app.get('/', (c) => {
+      return c.html(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>agent.base.eth</title>
+          <style>
+            body { 
+              font-family: system-ui, -apple-system, sans-serif; 
+              max-width: 800px; 
+              margin: 0 auto; 
+              padding: 2rem;
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              min-height: 100vh;
+            }
+            .container {
+              background: white;
+              border-radius: 16px;
+              padding: 2rem;
+              box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            }
+            h1 { 
+              color: #333;
+              margin-bottom: 0.5rem;
+            }
+            .subtitle {
+              color: #666;
+              margin-bottom: 2rem;
+            }
+            .endpoints {
+              background: #f8f9fa;
+              border-radius: 8px;
+              padding: 1.5rem;
+              margin: 1rem 0;
+            }
+            .endpoint {
+              margin: 1rem 0;
+              padding: 0.75rem;
+              background: white;
+              border-radius: 6px;
+              border-left: 4px solid #667eea;
+            }
+            .method {
+              display: inline-block;
+              padding: 0.25rem 0.5rem;
+              border-radius: 4px;
+              font-weight: bold;
+              font-size: 0.875rem;
+              margin-right: 0.5rem;
+            }
+            .get { background: #28a745; color: white; }
+            .post { background: #007bff; color: white; }
+            .price {
+              float: right;
+              background: #ffc107;
+              color: #333;
+              padding: 0.25rem 0.5rem;
+              border-radius: 4px;
+              font-weight: bold;
+              font-size: 0.875rem;
+            }
+            .free {
+              background: #28a745;
+              color: white;
+            }
+            .path {
+              font-family: monospace;
+              color: #333;
+            }
+            .description {
+              color: #666;
+              font-size: 0.875rem;
+              margin-top: 0.5rem;
+            }
+            .features {
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+              gap: 1rem;
+              margin: 2rem 0;
+            }
+            .feature {
+              background: #f8f9fa;
+              padding: 1rem;
+              border-radius: 8px;
+              text-align: center;
+            }
+            .feature-icon {
+              font-size: 2rem;
+              margin-bottom: 0.5rem;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <h1>🔥 Stableburn Agent x402 API</h1>
+            <p class="subtitle">AI Agent with x402 Payment-Enabled Services</p>
+            
+            <h2>API Endpoints</h2>
+            
+            <div class="endpoints">
+              <div class="endpoint">
+                <span class="method get">GET</span>
+                <span class="path">/</span>
+                <span class="price free">FREE</span>
+                <div class="description">This landing page</div>
+              </div>
+              
+              <div class="endpoint">
+                <span class="method get">GET</span>
+                <span class="path">/health</span>
+                <span class="price free">FREE</span>
+                <div class="description">Health check endpoint</div>
+              </div>
+              
+              <div class="endpoint">
+                <span class="method get">GET</span>
+                <span class="path">/api/agent</span>
+                <span class="price free">FREE</span>
+                <div class="description">Agent information and capabilities</div>
+              </div>
+              
+              <div class="endpoint">
+                <span class="method post">POST</span>
+                <span class="path">/chat</span>
+                <span class="price">$0.005</span>
+                <div class="description">Chat with AI assistant (x402 payment required)</div>
+              </div>
+              
+              <div class="endpoint">
+                <span class="method get">GET</span>
+                <span class="path">/api/discovery</span>
+                <span class="price">$0.001</span>
+                <div class="description">List x402 and MCP services (x402 payment required)</div>
+              </div>
+              
+              <div class="endpoint">
+                <span class="method post">POST</span>
+                <span class="path">/api/mcp/:tool</span>
+                <span class="price">$0.002</span>
+                <div class="description">Access MCP tools (x402 payment required)</div>
+              </div>
+              
+              <div class="endpoint">
+                <span class="method get">GET</span>
+                <span class="path">/api/data/opensea</span>
+                <span class="price">$0.01</span>
+                <div class="description">Premium OpenSea data (x402 payment required)</div>
+              </div>
+              
+              <div class="endpoint">
+                <span class="method post">POST</span>
+                <span class="path">/api/tip</span>
+                <span class="price free">FREE</span>
+                <div class="description">Send tips (voluntary)</div>
+              </div>
+            </div>
+            
+            <h2>Payment Information</h2>
+            <p>This service uses the x402 payment protocol. Protected endpoints require micropayments in USDC on Base.</p>
+            <p><strong>Receiver:</strong> <code>${this.receiverAddress}</code></p>
+            <p><strong>Network:</strong> ${process.env.NETWORK || 'base-sepolia'}</p>
+            
+            <h2>Contact</h2>
+            <p>XMTP: agent.base.eth</p>
+          </div>
+        </body>
+        </html>
+      `)
+    })
+
     // Health check (free)
     this.app.get('/health', (c) => {
       return c.json({ status: 'ok', agent: 'agent.base.eth' })

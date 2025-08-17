@@ -1,0 +1,418 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 248, 250, 252;
+  --background-end-rgb: 241, 245, 249;
+  --primary-blue: #0052FF;
+  --flame-primary: #FF6B35;
+  --flame-accent: #FFA500;
+  --steel-dark: #27272A;
+  --steel-light: #F4F4F5;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(135deg, #FAFAFA 0%, #F4F4F5 50%, #E4E4E7 100%);
+  min-height: 100vh;
+}
+
+.chat-container {
+  height: calc(100vh - 4rem);
+}
+
+/* Custom scrollbar for chat messages */
+.chat-container ::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-container ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-container ::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.chat-container ::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Ensure text colors are properly applied in chat interface */
+.chat-container * {
+  color: inherit;
+}
+
+/* Force dark text in white backgrounds */
+.chat-container .bg-white {
+  color: #1e293b;
+}
+
+/* Force white text in blue backgrounds */
+.chat-container .bg-base-blue {
+  color: white;
+}
+
+/* Bento card styles */
+@layer components {
+  .bento-card {
+    @apply relative overflow-hidden rounded-2xl bg-white/80 backdrop-blur-sm border border-steel-200 transition-all duration-300;
+  }
+  
+  .bento-card:hover {
+    @apply transform -translate-y-1 shadow-bento-hover border-flame-500/20;
+  }
+  
+  .bento-card-gradient {
+    @apply absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-flame-500/5;
+  }
+  
+  .glass-effect {
+    @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-glass;
+  }
+  
+  .flame-border {
+    @apply relative;
+  }
+  
+  .flame-border::before {
+    content: '';
+    @apply absolute inset-0 rounded-2xl bg-gradient-to-r from-base-blue via-flame-500 to-flame-400 opacity-0 transition-opacity duration-300;
+    padding: 2px;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    -webkit-mask-composite: xor;
+  }
+  
+  .flame-border:hover::before {
+    @apply opacity-100;
+  }
+  
+  .hero-gradient {
+    background: linear-gradient(135deg, #0052FF 0%, #0040CC 25%, rgba(0, 82, 255, 0.8) 50%, rgba(255, 107, 53, 0.2) 100%);
+  }
+  
+  .text-gradient {
+    @apply bg-gradient-to-r from-base-blue to-flame-500 bg-clip-text text-transparent;
+  }
+  
+  .btn-primary {
+    @apply bg-base-blue text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:bg-blue-600 hover:shadow-lg;
+  }
+  
+  .btn-flame {
+    @apply bg-gradient-to-r from-flame-500 to-flame-400 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:shadow-flame;
+  }
+}
+
+/* Animated background particles */
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-20px) rotate(90deg); }
+  50% { transform: translateY(0) rotate(180deg); }
+  75% { transform: translateY(20px) rotate(270deg); }
+}
+
+.particle {
+  animation: float 6s ease-in-out infinite;
+}
+
+.particle-delay-1 { animation-delay: 0s; }
+.particle-delay-2 { animation-delay: 1s; }
+.particle-delay-3 { animation-delay: 2s; }
+.particle-delay-4 { animation-delay: 3s; }
+.particle-delay-5 { animation-delay: 4s; }
+
+/* Pixel burn effect animations */
+@keyframes pixelBurn {
+  0% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+    filter: brightness(1) contrast(1);
+  }
+  20% {
+    transform: scale(1.02) rotate(0.5deg);
+    filter: brightness(1.2) contrast(1.5) hue-rotate(20deg);
+  }
+  40% {
+    transform: scale(0.98) rotate(-1deg);
+    opacity: 0.8;
+    filter: brightness(2) contrast(2) hue-rotate(90deg) saturate(2);
+  }
+  60% {
+    transform: scale(1.05) rotate(2deg) translateY(-5px);
+    opacity: 0.4;
+    filter: brightness(3) contrast(3) hue-rotate(180deg) saturate(0) blur(2px);
+  }
+  80% {
+    transform: scale(0.95) rotate(-2deg) translateY(10px);
+    opacity: 0.1;
+    filter: brightness(4) contrast(4) hue-rotate(270deg) blur(8px);
+  }
+  90% {
+    transform: scale(0.9) rotate(0deg);
+    opacity: 0;
+    filter: brightness(5) blur(20px);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+    filter: brightness(1) blur(0px);
+  }
+}
+
+@keyframes pixelReform {
+  0% {
+    opacity: 0;
+    transform: scale(0.8) rotate(180deg);
+    filter: brightness(0) saturate(3) hue-rotate(180deg);
+  }
+  30% {
+    opacity: 0.3;
+    transform: scale(1.1) rotate(90deg);
+    filter: brightness(0.5) saturate(2) hue-rotate(90deg) blur(4px);
+  }
+  60% {
+    opacity: 0.7;
+    transform: scale(0.95) rotate(45deg);
+    filter: brightness(0.8) saturate(1.5) hue-rotate(45deg) blur(2px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+    filter: brightness(0.9) saturate(1.2) hue-rotate(0deg) blur(0px);
+  }
+}
+
+.pixel-burn-container {
+  position: relative;
+}
+
+.pixel-burn-active {
+  animation: pixelBurn 0.8s ease-out forwards;
+}
+
+.pixel-reform-active {
+  animation: pixelReform 0.6s ease-in-out forwards;
+}
+
+/* Pixel particle effect */
+.pixel-particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: linear-gradient(45deg, #FF6B35, #FF4500, #0052FF);
+  pointer-events: none;
+  border-radius: 1px;
+}
+
+@keyframes pixelFloat {
+  0% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(var(--x), var(--y)) scale(0.5) rotate(180deg);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(calc(var(--x) * 2), calc(var(--y) * 2)) scale(0) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+.pixel-float {
+  animation: pixelFloat 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Deeper color states after burn */
+.bento-card-burned {
+  background: linear-gradient(135deg, 
+    rgba(0, 82, 255, 0.95), 
+    rgba(255, 107, 53, 0.85),
+    rgba(39, 39, 42, 0.9)
+  );
+  background-size: 200% 200%;
+  animation: deepenGradient 3s ease-in-out infinite;
+}
+
+@keyframes deepenGradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Holographic foil effect */
+.holographic-card {
+  position: relative;
+  background: linear-gradient(
+    135deg,
+    #0052FF 0%,
+    #00D4FF 20%,
+    #FF00FF 40%,
+    #FFD700 60%,
+    #00FF88 80%,
+    #0052FF 100%
+  );
+  background-size: 300% 300%;
+  animation: holographicShift 8s ease-in-out infinite;
+}
+
+.holographic-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.1) 50%,
+    transparent 70%
+  );
+  background-size: 200% 200%;
+  animation: holographicShine 3s linear infinite;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.holographic-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(255, 255, 255, 0.3) 0%,
+    transparent 50%
+  );
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+
+.holographic-card:hover::after {
+  opacity: 1;
+}
+
+@keyframes holographicShift {
+  0%, 100% { background-position: 0% 50%; }
+  25% { background-position: 100% 0%; }
+  50% { background-position: 100% 100%; }
+  75% { background-position: 0% 100%; }
+}
+
+@keyframes holographicShine {
+  0% { background-position: -100% -100%; }
+  100% { background-position: 200% 200%; }
+}
+
+/* Roadmap nodes */
+.roadmap-node {
+  @apply relative cursor-pointer transition-all duration-300;
+  transform-style: preserve-3d;
+  perspective: 1000px;
+}
+
+.roadmap-node-circle {
+  @apply w-12 h-12 rounded-full flex items-center justify-center font-bold text-white;
+  background: linear-gradient(135deg, #0052FF, #FF6B35);
+  box-shadow: 
+    0 0 20px rgba(0, 82, 255, 0.4),
+    inset 0 0 20px rgba(255, 107, 53, 0.2);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.roadmap-node:hover .roadmap-node-circle {
+  transform: scale(1.2) rotateZ(360deg);
+  box-shadow: 
+    0 0 30px rgba(0, 82, 255, 0.6),
+    0 0 60px rgba(255, 107, 53, 0.3),
+    inset 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+.roadmap-node-active .roadmap-node-circle {
+  animation: nodePulse 2s ease-in-out infinite;
+  background: linear-gradient(135deg, #FF6B35, #FFA500, #0052FF);
+}
+
+@keyframes nodePulse {
+  0%, 100% { 
+    transform: scale(1.2);
+    box-shadow: 
+      0 0 30px rgba(255, 107, 53, 0.8),
+      0 0 60px rgba(0, 82, 255, 0.4);
+  }
+  50% { 
+    transform: scale(1.3);
+    box-shadow: 
+      0 0 40px rgba(255, 107, 53, 1),
+      0 0 80px rgba(0, 82, 255, 0.6);
+  }
+}
+
+.roadmap-connector {
+  position: absolute;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    #0052FF 10%,
+    #FF6B35 50%,
+    #0052FF 90%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: connectorFlow 3s linear infinite;
+  opacity: 0.6;
+}
+
+@keyframes connectorFlow {
+  0% { background-position: -100% 0; }
+  100% { background-position: 100% 0; }
+}
+
+.roadmap-detail {
+  @apply absolute z-20 p-4 rounded-xl shadow-2xl;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 82, 255, 0.2);
+  min-width: 280px;
+  transform-origin: top center;
+  animation: detailReveal 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes detailReveal {
+  0% {
+    opacity: 0;
+    transform: scale(0.8) translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.holographic-text {
+  background: linear-gradient(
+    90deg,
+    #0052FF,
+    #00D4FF,
+    #FF00FF,
+    #FFD700,
+    #00FF88,
+    #0052FF
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: holographicText 3s linear infinite;
+}
+
+@keyframes holographicText {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 200% 0%; }
+}
