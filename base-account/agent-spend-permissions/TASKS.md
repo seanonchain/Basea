@@ -204,70 +204,6 @@ This file tracks implementation tasks, features, and work progress for the Agent
 
 ---
 
-## 📲 apps/base-miniapp - Base App Integration
-
-### MiniKit Setup
-**Status:** 🔴 Not Started  
-**Priority:** Medium  
-**Intention:** Create Base App miniapp for in-app agent chat.
-
-#### Implementation Steps:
-- [ ] Install MiniKit SDK
-- [ ] Create minikit.config.js
-- [ ] Set up authentication flow
-- [ ] Configure app manifest
-- [ ] Register with Base App
-- [ ] Test in Base App sandbox
-- [ ] Submit for review
-- [ ] Deploy to production
-
-### Chat Interface
-**Status:** 🔴 Not Started  
-**Priority:** Medium  
-**Intention:** Build user-friendly chat UI for agent interaction.
-
-#### Implementation Steps:
-- [ ] Create ChatWidget component
-- [ ] Implement message display
-- [ ] Add input handling
-- [ ] Create typing indicators
-- [ ] Add message history
-- [ ] Implement auto-scroll
-- [ ] Add emoji support
-- [ ] Create payment UI elements
-
-### Agent Client Connection
-**Status:** 🔴 Not Started  
-**Priority:** Medium  
-**Intention:** Connect miniapp to agent.base.eth backend.
-
-#### Implementation Steps:
-- [ ] Create agent-client.ts
-- [ ] Implement WebSocket connection
-- [ ] Add message queueing
-- [ ] Handle connection errors
-- [ ] Implement retry logic
-- [ ] Add authentication
-- [ ] Create state management
-- [ ] Test real-time messaging
-
-### Payment Integration
-**Status:** 🔴 Not Started  
-**Priority:** Low  
-**Intention:** Enable x402 payments and tipping within miniapp.
-
-#### Implementation Steps:
-- [ ] Create PaymentButton component
-- [ ] Integrate x402 client
-- [ ] Add tip functionality
-- [ ] Implement payment confirmation
-- [ ] Add transaction history
-- [ ] Create payment analytics
-- [ ] Test payment flows
-- [ ] Add error handling
-
----
-
 ## 🔮 Future Enhancements
 
 ### Phase 2: Extended Features
@@ -331,18 +267,15 @@ bun run build
 # Development
 bun run dev:web        # Start web app
 bun run dev:agent      # Start agent service
-bun run dev:miniapp    # Start miniapp
 
 # Testing
 bun test              # Run all tests
 bun test:web         # Test web app
 bun test:agent       # Test agent service
-bun test:miniapp     # Test miniapp
 
 # Deployment
 bun run deploy:web    # Deploy web app
 bun run deploy:agent  # Deploy agent service
-bun run deploy:miniapp # Deploy miniapp
 ```
 
 ---
@@ -352,7 +285,6 @@ bun run deploy:miniapp # Deploy miniapp
 ### Overall Completion
 - **apps/web**: 75% complete (migration pending)
 - **apps/agent-base-eth**: 0% complete (not started)
-- **apps/base-miniapp**: 0% complete (not started)
 - **Infrastructure**: 0% complete (not started)
 
 ### Priority Order
@@ -361,8 +293,7 @@ bun run deploy:miniapp # Deploy miniapp
 3. Build agent.base.eth XMTP integration
 4. Implement discovery service
 5. Deploy $DATABURN token
-6. Create Base miniapp
-7. Launch full system
+6. Launch full system
 
 ---
 

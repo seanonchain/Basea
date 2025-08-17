@@ -12,9 +12,7 @@
         "OPENAI_API_KEY",
         "OPENSEA_ACCESS_TOKEN",
         "X402_WALLET_ADDRESS",
-        "XMTP_PRIVATE_KEY",
-        "BASE_APP_ID",
-        "MINIKIT_SECRET"
+        "XMTP_PRIVATE_KEY"
       ]
     },
     "dev": {

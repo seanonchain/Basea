@@ -134,7 +134,7 @@ Required environment variables:
 
 ## Multi-App Monorepo Architecture
 
-The project is evolving into a multi-app monorepo structure to support the agent.base.eth ecosystem, consisting of three main applications:
+The project is evolving into a multi-app monorepo structure to support the agent.base.eth ecosystem, consisting of two main applications:
 
 ### Application Structure
 
@@ -149,12 +149,6 @@ The project is evolving into a multi-app monorepo structure to support the agent
 - OpenSea data proxy with payment requirements
 - $DATABURN tokenomics with auto-burn mechanism
 - Smart contract for receiving and converting payments
-
-**apps/base-miniapp/** - Base App miniapp
-- MiniKit-powered chat interface
-- Direct connection to agent.base.eth backend
-- In-app x402 payments and tipping
-- Seamless Base App integration
 
 ### agent.base.eth Features
 
@@ -217,10 +211,6 @@ DATABURN_CONTRACT_ADDRESS=
 CLANKER_API_KEY=
 AGENT_ENS_NAME=agent.base.eth
 
-# Base App MiniApp
-BASE_APP_ID=
-MINIKIT_SECRET=
-MINIKIT_REDIRECT_URI=
 ```
 
 ### Development Workflow
@@ -244,7 +234,6 @@ MINIKIT_REDIRECT_URI=
 Each app maintains its own API routes:
 - `apps/web/api/` - Original Zora and spend permission endpoints
 - `apps/agent-base-eth/api/` - Agent services and discovery
-- `apps/base-miniapp/api/` - MiniKit and chat endpoints
 
 ### Future Expansions
 
